@@ -8,7 +8,6 @@ app.get('/api/v1/data', async (req, res) => {
     const response = await fetch(apiUrl);
 
     try {
-
         console.log(response);
 
         if (!response.ok) {
