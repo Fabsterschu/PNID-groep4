@@ -22,7 +22,7 @@ async function tooMuchWind() {
 
     //console.log(data);
 
-    
+
     data.hourly.time.forEach((time, index) => {
         if (time.startsWith(chosenDate)) {
             const wind = data.hourly.wind_speed_10m[index];
@@ -31,7 +31,22 @@ async function tooMuchWind() {
             }
         }
     });
-    
+}
+
+async function rightTemperature() {
+    const data = await fetchData();
+    const maxTemp = 15;
+    const minTemp = 5;
+    const chosenDate = '2026-10-18';
+
+    data.hourly.time.forEach((time, index) => {
+        if (time.startsWith(chosenDate)) {
+            const temp = data.hourly.temperature_2m[index];
+            if (temp > maxTemp || temp < minTemp) {
+                display(`Not the right temperature: ${temp}${data.hourly_units.temperature_2m}`, 'temp')
+            }
+        }
+    });
 
 }
 
@@ -41,4 +56,5 @@ function display(tekst, id) {
     newElement.innerText = tekst;
     mainBody.appendChild(newElement);
 }
-tooMuchWind();
+
+rightTemperature();
