@@ -25,5 +25,5 @@ app.get('/api/v1/data', async (req, res) => {
 });
 
 app.listen(portNr, () => {
-    console.log(`draait op https://127.0.0.1:${portNr}/api/v1/data`)
+    console.log(`== Server online ==\nURL: http://127.0.0.1${portNr == 80 ? '' : `:${portNr}`}\nIP: 127.0.0.1/\nPort: ${portNr}\nAPI: http://127.0.0.1${portNr == 80 ? '' : `:${portNr}`}/api/v1/data`)
 })
