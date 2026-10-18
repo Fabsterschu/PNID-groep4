@@ -1,1 +1,2 @@
-window.onload = document.getElementById("weer").innerText = "test";
+const mainBody = document.getElementById("mainBody");
+
