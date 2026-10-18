@@ -17,10 +17,25 @@ async function fetchData() {
 
 function tooMuchWind() {
     const data = fetchData();
+    const chosenDate = '2026-10-18';
+    const maxWind = 10;
 
-    let indexArray = [];
-    console.log(data)
-    //for(let i = 0; i<data.hourly)
+
+    data.hourly.time.forEach((time, index) => {
+        if (time.startsWith(chosenDate)) {
+            const wind = data.hourly.wind_speed_10m[index];
+            if (wind => maxWind) {
+                display(`Hella Windy: ${wind}`, 'wind')
+            }
+        }
+    });
+
 }
 
+function display(tekst, id) {
+    let newElement = document.createElement(`p`);
+    newElement.id = id;
+    newElement.innerText = tekst;
+    mainBody.appendChild(newElement);
+}
 tooMuchWind();
