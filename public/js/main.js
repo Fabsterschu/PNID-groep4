@@ -23,7 +23,6 @@ async function tooMuchWind(data) {
     const chosenDate = dateInput.value;
     const maxWind = 10;
 
-    //console.log(data);
 
 
     data.hourly.time.forEach((time, index) => {
@@ -61,6 +60,11 @@ function display(tekst, id) {
 
 async function checkPlanting() {
     const data = await fetchData();
+    Array.from(mainBody.children).forEach((child) => {
+        if (child.nodeName == "P") {
+            child.remove();
+        }
+    })
     tooMuchWind(data);
     rightTemperature(data);
 }
