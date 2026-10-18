@@ -1,4 +1,8 @@
 const mainBody = document.getElementById("mainBody");
+const plantButton = document.getElementById("plantButton");
+const dateInput = document.getElementById("dateInput");
+
+plantButton.addEventListener(("click"), (clickEvent) => checkPlanting()) 
 
 async function fetchData() {
     try {
@@ -15,9 +19,8 @@ async function fetchData() {
     return {};
 }
 
-async function tooMuchWind() {
-    const data = await fetchData();
-    const chosenDate = '2026-10-18';
+async function tooMuchWind(data) {
+    const chosenDate = dateInput.value;
     const maxWind = 10;
 
     //console.log(data);
@@ -27,17 +30,16 @@ async function tooMuchWind() {
         if (time.startsWith(chosenDate)) {
             const wind = data.hourly.wind_speed_10m[index];
             if (wind >= maxWind) {
-                display(`Hella Windy: ${wind}`, 'wind')
+                display(`Hella Windy: ${wind}${data.hourly_units.wind_speed_10m}`, 'wind')
             }
         }
     });
 }
 
-async function rightTemperature() {
-    const data = await fetchData();
+async function rightTemperature(data) {
     const maxTemp = 15;
     const minTemp = 5;
-    const chosenDate = '2026-10-18';
+    const chosenDate = dateInput.value;
 
     data.hourly.time.forEach((time, index) => {
         if (time.startsWith(chosenDate)) {
@@ -57,4 +59,8 @@ function display(tekst, id) {
     mainBody.appendChild(newElement);
 }
 
-rightTemperature();
+async function checkPlanting() {
+    const data = await fetchData();
+    tooMuchWind(data);
+    rightTemperature(data);
+}
