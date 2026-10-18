@@ -15,7 +15,7 @@ app.get('/api/v1/data', async (req, res) => {
             throw new Error('jammer de bammer');
         }
 
-        const data = response.json();
+        const data = await response.json();
 
         res.json(data);
     }
