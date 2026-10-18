@@ -13,7 +13,6 @@ async function fetchData() {
         const data = await response.json();
         return data;
     } catch (error) {
-        //element.textContent = `Couldn't load weatherinformation`;
         console.error(error);
     }
     return {};
