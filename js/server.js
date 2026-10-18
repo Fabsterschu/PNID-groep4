@@ -8,19 +8,22 @@ app.get('/api/v1/data', async (req, res) => {
     const response = await fetch(apiUrl);
 
     try {
+
+        console.log(response);
+
         if (!response.ok) {
             throw new Error('jammer de bammer');
         }
 
         const data = response.json();
 
-        req.json(data);
+        res.json(data);
     }
     catch (error) {
         console.error("Dat ging niet helemaal lekker", error);
         res.status(500).json({ error: "Helaas konden wij de api data niet ophalen (volgende keer beter!)" });
     }
-    
+
 });
 
 app.listen(portNr, () => {
