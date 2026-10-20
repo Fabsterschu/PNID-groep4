@@ -50,12 +50,83 @@ async function rightTemperature(data) {
 
 }
 
+async function rightSoilMoisture_1_3cm(data){
+    const minMoisture = 0.18;
+    const maxMoisture = 0.28;
+    const chosenDate = dateInput.value;
+
+    data.hourly.time.forEach((time, index) => {
+        if(time.startsWith(chosenDate)){
+            const moisture = data.hourly.soil_moisture_1_to_3cm[index];
+           
+            if( moisture < minMoisture || moisture > maxMoisture){
+                display(`Soil moisture 1-3cm not right: ${moisture}${data.hourly_units.soil_moisture_1_to_3cm}`, 'moisture');
+            }
+        }
+    });
+
+}
+
+async function rightSoilMoisture_3_9cm(data){
+    const minMoisture = 0.200;
+    const maxMoisture = 0.300;
+    const chosenDate = dateInput.value;
+
+    data.hourly.time.forEach((time, index) => {
+        if(time.startsWith(chosenDate)){
+            const moisture = data.hourly.soil_moisture_3_to_9cm[index];
+           if( moisture < minMoisture || moisture > maxMoisture){
+                display(`Soil moisture 3-9cm not right: ${moisture}${data.hourly_units.soil_moisture_3_to_9cm}`, 'moisture');
+           }
+        }
+
+    });
+} 
+
+async function rightSoilMoisture_9_27cm(data){
+    const minMoisture = 0.220;
+    const maxMoisture = 0.320;
+    const chosenDate = dateInput.value;
+
+    data.hourly.time.forEach((time, index) => {
+        if(time.startsWith(chosenDate)){
+            const moisture = data.hourly.soil_moisture_9_to_27cm[index];
+           if( moisture < minMoisture || moisture > maxMoisture){
+                display(`Soil moisture 9-27cm not right: ${moisture}${data.hourly_units.soil_moisture_9_to_27cm}`, 'moisture');
+           }
+        }
+
+    });
+
+}
+
+async function rightSoilTemperature(data){
+    const minTemp = 5;
+    const maxTemp = 15;
+    const chosenDate = dateInput.value;
+
+    data.hourly.time.forEach((time, index) => {
+        if(time.startsWith(chosenDate)){
+            const temp = data.hourly.soil_temperature_6cm[index];
+            if( temp < minTemp || temp > maxTemp){
+                display(`Soil temperature not good: ${temp}${data.hourly_units.soil_temperature_6cm}`, 'temp');
+            }
+        }
+    });
+}
+
+
+
+
+    
+
 function display(tekst, id) {
     let newElement = document.createElement(`p`);
     newElement.id = id;
     newElement.innerText = tekst;
     mainBody.appendChild(newElement);
 }
+
 
 async function checkPlanting() {
     const data = await fetchData();
@@ -66,4 +137,11 @@ async function checkPlanting() {
     })
     tooMuchWind(data);
     rightTemperature(data);
+    rightSoilMoisture_1_3cm(data);
+    rightSoilMoisture_3_9cm(data);
+    rightSoilMoisture_9_27cm(data);
+    rightSoilTemperature(data);
+
 }
+
+
