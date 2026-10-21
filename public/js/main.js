@@ -18,7 +18,7 @@ async function fetchData() {
     return {};
 }
 
-async function tooMuchWind(data) {
+function tooMuchWind(data) {
     const chosenDate = dateInput.value;
     const maxWind = 10;
 
@@ -34,7 +34,7 @@ async function tooMuchWind(data) {
     });
 }
 
-async function rightTemperature(data) {
+function rightTemperature(data) {
     const maxTemp = 15;
     const minTemp = 5;
     const chosenDate = dateInput.value;
@@ -50,7 +50,29 @@ async function rightTemperature(data) {
 
 }
 
-async function rightSoilMoisture_1_3cm(data){
+function checkPrecipitation(data) {
+    // 0 tot max 2 mm per dag en minder dan 20% precipitation voor het planten zelf (en 2-3 dagen ervoor)
+    // 15 tot 25 mm opgeteld over 7 - 14 dagen en 50% precipitation voor de 1-2 weken erna
+    // voor het PoC ga ik nu uit van alleen planten
+    const maxMm = 2;
+    const maxProbability = 20;
+    const chosenDate = dateInput.value;
+    const hourlyData = data.hourly;
+    const hourlyUnits= data.hourly_units;
+
+    hourlyData.time.forEach((time, index) => {
+        if (time.startsWith(chosenDate)) {
+            const mm = hourlyData.precipitation[index];
+            const probability = hourlyData.precipitation_probability[index];
+
+            if (mm > maxMm || probability > maxProbability) {
+                display(`Too wet: ${mm}${hourlyUnits.precipitation}, ${probability}${hourlyUnits.precipitation_probability}`)
+            }
+        }
+    })
+}
+
+function rightSoilMoisture_1_3cm(data){
     const minMoisture = 0.18;
     const maxMoisture = 0.28;
     const chosenDate = dateInput.value;
@@ -67,7 +89,7 @@ async function rightSoilMoisture_1_3cm(data){
 
 }
 
-async function rightSoilMoisture_3_9cm(data){
+function rightSoilMoisture_3_9cm(data){
     const minMoisture = 0.200;
     const maxMoisture = 0.300;
     const chosenDate = dateInput.value;
@@ -83,7 +105,7 @@ async function rightSoilMoisture_3_9cm(data){
     });
 } 
 
-async function rightSoilMoisture_9_27cm(data){
+function rightSoilMoisture_9_27cm(data){
     const minMoisture = 0.220;
     const maxMoisture = 0.320;
     const chosenDate = dateInput.value;
@@ -100,7 +122,7 @@ async function rightSoilMoisture_9_27cm(data){
 
 }
 
-async function rightSoilTemperature(data){
+function rightSoilTemperature(data){
     const minTemp = 5;
     const maxTemp = 15;
     const chosenDate = dateInput.value;
@@ -115,9 +137,6 @@ async function rightSoilTemperature(data){
     });
 }
 
-
-
-
     
 
 function display(tekst, id) {
@@ -130,6 +149,7 @@ function display(tekst, id) {
 
 async function checkPlanting() {
     const data = await fetchData();
+    console.log(data);
     Array.from(mainBody.children).forEach((child) => {
         if (child.nodeName == "P") {
             child.remove();
@@ -137,6 +157,7 @@ async function checkPlanting() {
     })
     tooMuchWind(data);
     rightTemperature(data);
+    checkPrecipitation(data);
     rightSoilMoisture_1_3cm(data);
     rightSoilMoisture_3_9cm(data);
     rightSoilMoisture_9_27cm(data);
