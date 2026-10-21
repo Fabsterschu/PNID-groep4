@@ -122,7 +122,7 @@ data.hourly.time.forEach((time, index) => {
 
         if(moisture1_3cm < minMoisture1_3cm || moisture1_3cm > maxMoisture1_3cm){
             display(`Soil moisture 1-3cm not right for planting: ${moisture1_3cm}${data.hourly_units.soil_moisture_1_to_3cm}`, 'moisture1_3cm');
-}
+        }
         if(moisture3_9cm < minMoisture3_9cm || moisture3_9cm > maxMoisture3_9cm){
             display(`Soil moisture 3-9cm not right for planting: ${moisture3_9cm}${data.hourly_units.soil_moisture_3_to_9cm}`, 'moisture3_9cm');
         }
@@ -131,6 +131,7 @@ data.hourly.time.forEach((time, index) => {
         }
     }
 });
+}
 
 async function rightSoilTemperature(data){
     const minTemp = 5;
@@ -174,4 +175,4 @@ async function checkPlanting() {
 
 }
 
-}
+
