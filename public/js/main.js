@@ -71,7 +71,7 @@ function checkPrecipitation(data) {
         }
     })
 }
-
+/*
 function rightSoilMoisture_1_3cm(data){
     const minMoisture = 0.18;
     const maxMoisture = 0.28;
@@ -121,6 +121,7 @@ function rightSoilMoisture_9_27cm(data){
     });
 
 }
+*/
 
 
 async function checkSoilMoisture(data){
