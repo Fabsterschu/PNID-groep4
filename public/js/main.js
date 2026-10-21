@@ -199,6 +199,7 @@ async function checkPlanting() {
         }
     })
     tooMuchWind(data);
+    tooSnowy(data);
     rightTemperature(data);
     checkPrecipitation(data);
     checkSoilMoisture(data);
