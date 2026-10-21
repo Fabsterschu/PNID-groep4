@@ -122,6 +122,37 @@ function rightSoilMoisture_9_27cm(data){
 
 }
 
+
+async function checkSoilMoisture(data){
+const minMoisture1_3cm = 0.18;
+const maxMoisture1_3cm = 0.28;
+
+const minMoisture3_9cm = 0.200;
+const maxMoisture3_9cm = 0.300;
+
+const minMoisture9_27cm = 0.220;
+const maxMoisture9_27cm = 0.320;
+const chosenDate = dateInput.value;
+
+data.hourly.time.forEach((time, index) => {
+    if(time.startsWith(chosenDate)){
+        const moisture1_3cm = data.hourly.soil_moisture_1_to_3cm[index];
+        const moisture3_9cm = data.hourly.soil_moisture_3_to_9cm[index];
+        const moisture9_27cm = data.hourly.soil_moisture_9_to_27cm[index];
+
+        if(moisture1_3cm < minMoisture1_3cm || moisture1_3cm > maxMoisture1_3cm){
+            display(`Soil moisture 1-3cm not right for planting: ${moisture1_3cm}${data.hourly_units.soil_moisture_1_to_3cm}`, 'moisture1_3cm');
+        }
+        if(moisture3_9cm < minMoisture3_9cm || moisture3_9cm > maxMoisture3_9cm){
+            display(`Soil moisture 3-9cm not right for planting: ${moisture3_9cm}${data.hourly_units.soil_moisture_3_to_9cm}`, 'moisture3_9cm');
+        }
+        if(moisture9_27cm < minMoisture9_27cm || moisture9_27cm > maxMoisture9_27cm){
+            display(`Soil moisture 9-27cm not right for planting ${moisture9_27cm}${data.hourly_units.soil_moisture_9_to_27cm}`, 'moisture9_27cm');
+        }
+    }
+});
+}
+
 function rightSoilTemperature(data){
     const minTemp = 5;
     const maxTemp = 15;
@@ -157,10 +188,14 @@ async function checkPlanting() {
     })
     tooMuchWind(data);
     rightTemperature(data);
+<<<<<<< HEAD
     checkPrecipitation(data);
     rightSoilMoisture_1_3cm(data);
     rightSoilMoisture_3_9cm(data);
     rightSoilMoisture_9_27cm(data);
+=======
+    checkSoilMoisture(data);
+>>>>>>> 7231b8adc28256a06ab8a03c4835d5acf81ba27c
     rightSoilTemperature(data);
 
 }
