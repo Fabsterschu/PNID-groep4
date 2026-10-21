@@ -189,14 +189,8 @@ async function checkPlanting() {
     })
     tooMuchWind(data);
     rightTemperature(data);
-<<<<<<< HEAD
     checkPrecipitation(data);
-    rightSoilMoisture_1_3cm(data);
-    rightSoilMoisture_3_9cm(data);
-    rightSoilMoisture_9_27cm(data);
-=======
     checkSoilMoisture(data);
->>>>>>> 7231b8adc28256a06ab8a03c4835d5acf81ba27c
     rightSoilTemperature(data);
 
 }
