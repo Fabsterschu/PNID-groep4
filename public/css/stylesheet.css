@@ -15,6 +15,18 @@ h1{
     font-family: "Press Start 2P", "limelight";
 }
 
+.navButton {
+    border-style: inset;
+    border-color: green;
+    border-width: 4px;
+    padding: 5px;
+    background-color: rgb(170, 226, 182);
+    color: green;
+    font-size: large;
+    font-family: "limelight";
+    text-decoration: none;
+}
+
 #plantButton {
     border-style: inset;
     border-color: green;
