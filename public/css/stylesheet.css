@@ -5,6 +5,10 @@ body{
     background-attachment: fixed;
 }
 
+#Title {
+    text-align: center;
+}
+
 h1{
     color: white;
     font-weight: lighter;
@@ -51,7 +55,7 @@ h1{
 
 .titel-afbeelding {
     display: block;
-    width: 1000px;
+    width: 1200px;
     max-width: 100%;
     height: 200px;
     margin-bottom: 20px;
