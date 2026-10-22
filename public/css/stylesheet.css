@@ -27,31 +27,35 @@ h1{
     text-decoration: none;
 }
 
-#plantButton {
-    border-style: inset;
-    border-color: green;
-    border-width: 4px;
-    padding: 5px;
-    background-color: rgb(170, 226, 182);
-    color: green;
-    font-size: large;
-    font-family: "limelight";
-
+nav {
+  margin-bottom: 20px;
 }
 
+.
 .Wrapper {
     display: flex;
     flex-direction: column;
     align-items: center;
 }
+#inputButton {
+    border-style: inset;
+    border-color: rgb(80, 139, 187);
+    border-width: 4px;
+    padding: 5px;
+    background-color: rgb(176, 212, 233);
+    color: rgb(73, 137, 198);
+    font-size: large;
+    font-family: "limelight";
+
+}
 
 #dateInput {
     border-style: inset;
-    border-color: green;
+    border-color: rgb(80, 139, 187);
     border-width: 4px;
     padding: 5px;
-    background-color: rgb(170, 226, 182);
-    color: green;
+    background-color: rgb(176, 212, 233);
+    color: rgb(73, 137, 198);
     font-size: large;
     font-family: "limelight";
 

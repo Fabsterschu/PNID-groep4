@@ -1,5 +1,5 @@
 const mainBody = document.getElementById("mainBody");
-const plantButton = document.getElementById("plantButton");
+const plantButton = document.getElementById("inputButton");
 const dateInput = document.getElementById("dateInput");
 
 plantButton.addEventListener(("click"), (clickEvent) => checkPlanting())
