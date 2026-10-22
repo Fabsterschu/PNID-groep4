@@ -25,14 +25,13 @@ h1{
     font-size: large;
     font-family: "limelight";
     text-decoration: none;
+    align-content: center;
 }
 
 nav {
   margin-bottom: 20px;
-  
 }
 
-.
 .Wrapper {
     display: flex;
     flex-direction: column;
