@@ -219,28 +219,6 @@ function checkSoilMoisture(data) {
             if(moisture1_3cm < minMoisture1_3cm && moisture1_3cm > 0.10){
                 totalScorePlanting += 0.5;
             }
-            //3-9cm
-            /*
-            if(moisture3_9cm >= minMoisture3_9cm && moisture3_9cm <= maxMoisture3_9cm){
-                totalScorePlanting += 1.0;
-            }
-            if(moisture3_9cm > maxMoisture3_9cm && moisture3_9cm < 0.40){
-                totalScorePlanting += 0.5;
-            }
-            if(moisture3_9cm < minMoisture3_9cm && moisture3_9cm > 0.15){
-                totalScorePlanting += 0.5;
-            }
-            //9-27cm
-            if(moisture9_27cm >= minMoisture9_27cm && moisture9_27cm <= maxMoisture9_27cm){
-                totalScorePlanting += 1.0;
-            }
-            if(moisture9_27cm > maxMoisture9_27cm && moisture9_27cm < 0.45){
-                totalScorePlanting += 0.5;
-            }
-            if(moisture9_27cm < minMoisture9_27cm && moisture9_27cm > 0.20){
-                totalScorePlanting += 0.5;
-            }
-                */
 
         }
     });
@@ -254,9 +232,9 @@ function rightSoilTemperature(data) {
     data.hourly.time.forEach((time, index) => {
         if (time.startsWith(chosenDate)) {
             const temp = data.hourly.soil_temperature_6cm[index];
-            // if (temp < minTemp || temp > maxTemp) {
-            //     display(`Soil temperature not good: ${temp}${data.hourly_units.soil_temperature_6cm}`, 'temp');
-            // }
+             if (temp < minTemp || temp > maxTemp) {
+                 display(`Soil temperature not good: ${temp}${data.hourly_units.soil_temperature_6cm}`, 'temp');
+             }
             if(temp >= minTemp && temp <= maxTemp){
                 totalScorePlanting += 1.0;
             }
@@ -288,6 +266,7 @@ function display(tekst, categorie) {
 async function checkPlanting(paramString) {
     snowy = false;
     totalScorePlanting = 0.0;
+    let barChart = null;
 
     const data = await fetchData(paramString);
     console.log(data);
@@ -296,8 +275,10 @@ async function checkPlanting(paramString) {
             child.remove();
         }
     })
+    const weekdatums = getAWeekAfterDate(dateInput.value);
+    
     tooSnowy(data);
-     tooMuchWind(data);
+    tooMuchWind(data);
     rightTemperature(data);
     checkPrecipitation(data);
     checkSoilMoisture(data);
@@ -307,6 +288,50 @@ async function checkPlanting(paramString) {
     if (scoreNr) {
         scoreNr.textContent = adviceNumber;
     }
+    createChart(data);
+
+}
+
+//Deze functie geeft een array terug met de 7dagen na gekozen datum, incl gekozen datum
+function getAWeekAfterDate(dateString){
+   const datums = [];
+    const startDate = new Date(dateString);
+    for (let i = 0; i < 7; i++) {
+        const pickedDate = new Date(startDate);
+
+        pickedDate.setDate(startDate.getDate() + i);
+        const formattedDate = pickedDate.toISOString().split('T')[0];
+        
+
+        datums.push(formattedDate);
+    }
+    return datums;
+}
+
+
+
+
+function createChart(data){
+  const ctx = document.getElementById('myChart');
+
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: getAWeekAfterDate(dateInput.value),
+      datasets: [{
+        label: 'Planting advice',
+        data: ['1', '2', '3', '4', '1', '2', '3'], // Example data, replace with actual advice data
+        borderWidth: 1
+      }]
+    },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
+  });
 
 }
 
