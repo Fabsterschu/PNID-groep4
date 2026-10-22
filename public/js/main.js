@@ -36,6 +36,8 @@ function tooMuchWind(data) {
 }
 
 function tooSnowy(data) {
+    const chosenDate = dateInput.value;
+    
     data.hourly.time.forEach((time, index) => {
         if (time.startsWith(chosenDate)) {
             const snow = data.hourly.snow_depth[index];
