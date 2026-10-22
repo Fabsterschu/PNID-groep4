@@ -1,12 +1,28 @@
 const mainBody = document.getElementById("mainBody");
 const plantButton = document.getElementById("inputButton");
 const dateInput = document.getElementById("dateInput");
+const formData = document.getElementById("dataForm");
 
 plantButton.addEventListener(("click"), (clickEvent) => checkPlanting())
 
-async function fetchData() {
+formData.addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    const urlData = new FormData(this);
+    const searchParams = new URLSearchParams(urlData);
+    
+    searchParams.delete("date");
+    searchParams.append("lattitude", 52.52);
+    searchParams.append("longitude", 13.41);
+
+    const queryString = searchParams.toString();
+
+    checkPlanting(queryString);
+})
+
+async function fetchData(paramString) {
     try {
-        const response = await fetch('/api/v1/data');
+        const response = await fetch(`/api/v1/data?${paramString}`);
         if (!response.ok) {
             throw new Error('failed to fetch data');
         }
@@ -146,8 +162,8 @@ function display(tekst, categorie) {
 }
 
 
-async function checkPlanting() {
-    const data = await fetchData();
+async function checkPlanting(paramString) {
+    const data = await fetchData(paramString);
     console.log(data);
     Array.from(mainBody.children).forEach((child) => {
         if (child.nodeName == "P") {
