@@ -3,8 +3,6 @@ const plantButton = document.getElementById("inputButton");
 const dateInput = document.getElementById("dateInput");
 const formData = document.getElementById("dataForm");
 
-plantButton.addEventListener(("click"), (clickEvent) => checkPlanting())
-
 formData.addEventListener("submit", function (event) {
     event.preventDefault();
 
