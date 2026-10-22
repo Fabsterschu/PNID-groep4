@@ -85,60 +85,9 @@ function checkPrecipitation(data) {
         }
     })
 }
-/*
-function rightSoilMoisture_1_3cm(data){
-    const minMoisture = 0.18;
-    const maxMoisture = 0.28;
-    const chosenDate = dateInput.value;
-
-    data.hourly.time.forEach((time, index) => {
-        if(time.startsWith(chosenDate)){
-            const moisture = data.hourly.soil_moisture_1_to_3cm[index];
-           
-            if( moisture < minMoisture || moisture > maxMoisture){
-                display(`Soil moisture 1-3cm not right: ${moisture}${data.hourly_units.soil_moisture_1_to_3cm}`, 'moisture');
-            }
-        }
-    });
-
-}
-
-function rightSoilMoisture_3_9cm(data){
-    const minMoisture = 0.200;
-    const maxMoisture = 0.300;
-    const chosenDate = dateInput.value;
-
-    data.hourly.time.forEach((time, index) => {
-        if(time.startsWith(chosenDate)){
-            const moisture = data.hourly.soil_moisture_3_to_9cm[index];
-           if( moisture < minMoisture || moisture > maxMoisture){
-                display(`Soil moisture 3-9cm not right: ${moisture}${data.hourly_units.soil_moisture_3_to_9cm}`, 'moisture');
-           }
-        }
-
-    });
-} 
-
-function rightSoilMoisture_9_27cm(data){
-    const minMoisture = 0.220;
-    const maxMoisture = 0.320;
-    const chosenDate = dateInput.value;
-
-    data.hourly.time.forEach((time, index) => {
-        if(time.startsWith(chosenDate)){
-            const moisture = data.hourly.soil_moisture_9_to_27cm[index];
-           if( moisture < minMoisture || moisture > maxMoisture){
-                display(`Soil moisture 9-27cm not right: ${moisture}${data.hourly_units.soil_moisture_9_to_27cm}`, 'moisture');
-           }
-        }
-
-    });
-
-}
-*/
 
 
-async function checkSoilMoisture(data) {
+function checkSoilMoisture(data) {
     const minMoisture1_3cm = 0.18;
     const maxMoisture1_3cm = 0.28;
 
