@@ -5,12 +5,6 @@ const formData = document.getElementById("dataForm");
 
 plantButton.addEventListener(("click"), (clickEvent) => checkPlanting())
 
-formData.addEventListener("submit", (event) => {
-    event.preventDefault();
-
-    
-})
-
 async function fetchData() {
     try {
         const response = await fetch('/api/v1/data');
