@@ -5,8 +5,7 @@ const formData = document.getElementById("dataForm");
 const scoreboard = document.getElementById("scoreboard");
 const scoreNr = document.getElementById("scoreNr");
 
-let snowy = false;
-let totalScorePlanting = 0.0;
+let plantenChart = null;
 
 formData.addEventListener("submit", async function (event) {
     event.preventDefault();
@@ -53,7 +52,7 @@ async function fetchData(paramString) {
     }
     return {};
 }
-//Als 1 van ze beetje afwijking heeft, krijg je gewoon lagere punten
+
 function tooMuchWind(data) {
     const chosenDate = dateInput.value;
     const maxWind = 10;
@@ -100,7 +99,85 @@ function tooSnowy(data) {
     });
 }
 
-//24uren in een dag en 5 categorieen - snowy = 4cat, dus 24*4 = 96 maxscore
+
+function calculatePlantingScore(data, datum) {
+    let totalScore = 0.0;
+    let snowy = false;
+
+    data.hourly.time.forEach((time, index) => {
+        if (time.startsWith(datum)) {
+            
+            if (data.hourly.snow_depth[index] > 0) {
+                snowy = true;
+            }
+
+            const wind = data.hourly.wind_speed_10m[index];
+            const windGusts = data.hourly.wind_gusts_10m[index];
+            if (wind <= 10 && windGusts <= 30) totalScore += 1.0;
+            else if (wind > 10 && wind < 13 && windGusts <= 30) totalScore += 0.5;
+            else if (wind > 10 && wind < 13 && windGusts > 30 && windGusts < 40) totalScore += 0.15;
+            else if (wind <= 10 && windGusts > 30 && windGusts < 40) totalScore += 0.5;
+
+            const temp = data.hourly.temperature_2m[index];
+            if (temp >= 5 && temp <= 15) {
+                totalScore += 1.0;
+            }
+            else if ((temp > 15 && temp < 20) || (temp < 5 && temp > 2)){
+                totalScore += 0.5;
+            } 
+
+        
+            const mm = data.hourly.precipitation[index];
+            const prob = data.hourly.precipitation_probability[index];
+            if (mm <= 2 && prob <= 20) {
+                totalScore += 1.0;
+            }
+            else if (mm > 2 && mm < 5 && prob <= 20) {
+                totalScore += 0.5;
+            }
+            else if (mm <= 2 && prob > 20 && prob < 40) {
+                totalScore += 0.5;
+            }
+
+            const m1 = data.hourly.soil_moisture_1_to_3cm[index];
+            if (m1 >= 0.18 && m1 <= 0.28) {
+                totalScore += 1.0;
+            }
+            else if ((m1 > 0.28 && m1 < 0.35) || (m1 < 0.18 && m1 > 0.10)){
+                totalScore += 0.5;
+            } 
+
+            
+            const soilTemp = data.hourly.soil_temperature_6cm[index];
+            if (soilTemp >= 5 && soilTemp <= 15) { 
+                totalScore += 1.0;
+            }
+            else if ((soilTemp > 15 && soilTemp < 20) || (soilTemp < 5 && soilTemp > 2)) {
+                totalScore += 0.5;
+            }
+        }
+    });
+
+    if (snowy) {
+        return 1;
+    }
+    //24uren in een dag en 5 categorieen - snowy = 4cat, dus 24*4 = 96 maxscore
+    const percentage = (totalScore / 96) * 100;
+    if (percentage >= 90) {
+        return 4;
+    }
+    if (percentage >= 60) {
+        return 3;
+    }
+    if (percentage >= 40) {
+        return 2;
+    }
+    else {
+    return 1;
+    }
+}
+
+/*
 function checkAdvice(data){
     if(snowy){
         return 1;
@@ -123,6 +200,7 @@ function checkAdvice(data){
        
     }
 }
+ */
 
 function rightTemperature(data) {
     const maxTemp = 15;
@@ -264,9 +342,7 @@ function display(tekst, categorie) {
 
 
 async function checkPlanting(paramString) {
-    snowy = false;
-    totalScorePlanting = 0.0;
-    let barChart = null;
+    //let barChart = null;
 
     const data = await fetchData(paramString);
     console.log(data);
@@ -275,20 +351,22 @@ async function checkPlanting(paramString) {
             child.remove();
         }
     })
-    const weekdatums = getAWeekAfterDate(dateInput.value);
+    const chosenDate = dateInput.value;
+    const weekdatums = getAWeekAfterDate(chosenDate);
+    const scores = weekdatums.map(datum => calculatePlantingScore(data, datum));
     
-    tooSnowy(data);
-    tooMuchWind(data);
-    rightTemperature(data);
-    checkPrecipitation(data);
-    checkSoilMoisture(data);
-    rightSoilTemperature(data);
-    const adviceNumber = checkAdvice(data);
+    // tooSnowy(data);
+    // tooMuchWind(data);
+    // rightTemperature(data);
+    // checkPrecipitation(data);
+    // checkSoilMoisture(data);
+    // rightSoilTemperature(data);
+   // const adviceNumber = checkAdvice(data);
 
     if (scoreNr) {
-        scoreNr.textContent = adviceNumber;
+        scoreNr.textContent = scores[0]; 
     }
-    createChart(data);
+    createChart(weekdatums, scores);
 
 }
 
@@ -311,16 +389,28 @@ function getAWeekAfterDate(dateString){
 
 
 
-function createChart(data){
+function createChart(datums,scores){
   const ctx = document.getElementById('myChart');
 
-  new Chart(ctx, {
+  if (plantenChart) {
+    plantenChart.destroy();
+  }
+
+  const barColors = scores.map(score => {
+        if (score == 4) return '#2e7d32'; 
+        if (score == 3) return '#558b2f'; 
+        if (score == 2) return '#ef6c00';
+        return '#c62828';                   
+    });
+
+  plantenChart = new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: getAWeekAfterDate(dateInput.value),
+      labels: datums,
       datasets: [{
         label: 'Planting advice',
-        data: ['1', '2', '3', '4', '1', '2', '3'], // Example data, replace with actual advice data
+        data: scores, 
+        backgroundColor: barColors,
         borderWidth: 1
       }]
     },
