@@ -27,7 +27,8 @@ function tooMuchWind(data) {
         if (time.startsWith(chosenDate)) {
             const wind = data.hourly.wind_speed_10m[index];
             const windGusts = data.hourly.wind_gusts_10m[index];
-            if (wind >= maxWind || windGusts >= maxWindGusts) {
+            if (wind >= maxWind || windGusts >= maxWindGusts) { 
+                // diplay alleen wind in km/h niet gusts.
                 display(`Hella Windy: ${wind}${data.hourly_units.wind_speed_10m}`, 'wind')
             }
         }
@@ -181,10 +182,14 @@ function rightSoilTemperature(data) {
 }
 
 
+function display(tekst, categorie) {
+    const newElement = document.createElement(`p`);
+    newElement.classList.add('advies');
 
-function display(tekst, id) {
-    let newElement = document.createElement(`p`);
-    newElement.id = id;
+    if (categorie) {
+        newElement.classList.add(categorie);
+    }
+
     newElement.innerText = tekst;
     mainBody.appendChild(newElement);
 }
