@@ -10,7 +10,7 @@ formData.addEventListener("submit", function (event) {
     const searchParams = new URLSearchParams(urlData);
     
     searchParams.delete("date");
-    searchParams.append("lattitude", 52.52);
+    searchParams.append("latitude", 52.52);
     searchParams.append("longitude", 13.41);
 
     const queryString = searchParams.toString();
