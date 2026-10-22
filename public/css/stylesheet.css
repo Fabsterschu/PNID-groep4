@@ -28,6 +28,11 @@ h1{
     align-content: center;
 }
 
+.navButton[aria-current="page"] {
+    background-color: darkgreen;
+    color: rgb(153, 229, 171);
+}
+
 nav {
   margin-bottom: 20px;
 }
