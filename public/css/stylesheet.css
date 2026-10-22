@@ -3,9 +3,8 @@ body{
     background:linear-gradient( skyblue, lightgreen);
     background-repeat: no-repeat;
     background-attachment: fixed;
-
-    /*background-color:rgb(82, 163, 99);*/
 }
+
 h1{
     color: white;
     font-weight: lighter;
@@ -23,6 +22,13 @@ h1{
     font-family: "limelight";
 
 }
+
+.Wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
 #dateInput {
     border-style: inset;
     border-color: green;
@@ -34,10 +40,20 @@ h1{
     font-family: "limelight";
 
 }
+
 .advies {
-    color:white;
+    color:green;
     font-family: "limelight";
     font-size: medium;
     font-weight: 400;
 
+}
+
+.titel-afbeelding {
+    display: block;
+    width: 1000px;
+    max-width: 100%;
+    height: 200px;
+    margin-bottom: 20px;
+    border-radius: 10px;
 }
