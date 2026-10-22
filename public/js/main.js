@@ -3,20 +3,37 @@ const plantButton = document.getElementById("inputButton");
 const dateInput = document.getElementById("dateInput");
 const formData = document.getElementById("dataForm");
 
-formData.addEventListener("submit", function (event) {
+formData.addEventListener("submit", async function (event) {
     event.preventDefault();
 
     const urlData = new FormData(this);
     const searchParams = new URLSearchParams(urlData);
-    
-    searchParams.delete("date");
-    searchParams.append("latitude", 52.52);
-    searchParams.append("longitude", 13.41);
 
-    const queryString = searchParams.toString();
+    try {
+        const position = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject);
+        })
 
-    checkPlanting(queryString);
+        const latitude = Math.round(position.coords.latitude * 100) / 100;
+        const longitude = Math.round(position.coords.longitude * 100) / 100;
+
+        searchParams.delete("date");
+        searchParams.append("latitude", latitude);
+        searchParams.append("longitude", longitude);
+
+        const queryString = searchParams.toString();
+
+        checkPlanting(queryString);
+    }
+    catch (error) {
+        console.error("Kon de live locatie niet ophalen.");
+        alert("Live locatie kon niet opgevraagd worden, geef je browser toestemming");
+    }
 })
+
+function getPosition() {
+
+}
 
 async function fetchData(paramString) {
     try {
