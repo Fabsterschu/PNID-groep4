@@ -33,6 +33,11 @@ h1{
     color: rgb(153, 229, 171);
 }
 
+.navButton:hover {
+    background-color: rgb(100, 188, 100);
+    color: darkgreen;
+}
+
 nav {
   margin-bottom: 20px;
 }
@@ -42,18 +47,56 @@ nav {
     flex-direction: column;
     align-items: center;
 }
-#inputButton {
-    border-style: inset;
-    border-color: rgb(80, 139, 187);
-    border-width: 4px;
-    padding: 5px;
-    background-color: rgb(176, 212, 233);
-    color: rgb(73, 137, 198);
-    font-size: large;
-    font-family: "limelight";
 
+.dropDown {
+    display: flex;
+    align-items: center ;
+    gap: 8px;
 }
 
+.produceDropdown {
+    position: relative;
+}
+
+.produceDropdown button {
+    /*Produce, Wheat en Corn*/
+    background-color: rgb(176, 212, 233);
+    border-width: 4px;
+    border-color: rgb(80, 139, 187);
+    border-style: inset;
+    color: rgb(73, 137, 198);
+    padding: 5px;
+    font-size: large;
+    font-family: "limelight";
+    align-content: center;
+    display: block;
+    cursor: pointer;
+}
+
+.produceDropdown:hover .produceOptions {
+    display: block;
+}
+
+.produceOptions {
+    /*Wheat en Corn*/
+    position: absolute;
+    display: none;
+    box-shadow: 2px 2px 5px rgb(74, 74, 210);
+    z-index: 10;
+}
+.produceOptions button {
+    width: 100%;
+    text-align: left;
+    white-space: nowrap;
+    background-color: rgb(183, 205, 236);
+}
+.produceDropdown button:hover {
+  background-color: rgb(130, 185, 220);
+    color: rgb(60, 118, 199);
+    border-color: rgb(105, 159, 234);
+}
+
+#inputButton,
 #dateInput {
     border-style: inset;
     border-color: rgb(80, 139, 187);
@@ -64,6 +107,13 @@ nav {
     font-size: large;
     font-family: "limelight";
 
+}
+
+#inputButton:hover,
+#dateInput:hover {
+    background-color: rgb(130, 185, 220);
+    color: rgb(60, 118, 199);
+    border-color: rgb(105, 159, 234);
 }
 
 .advies {
