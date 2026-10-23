@@ -2,6 +2,10 @@ const mainBody = document.getElementById("mainBody");
 const plantButton = document.getElementById("inputButton");
 const dateInput = document.getElementById("dateInput");
 const formData = document.getElementById("dataForm");
+const produceButton = document.getElementById("produceButton");
+const produceOptions = document.querySelectorAll(".produceOptions button");
+let selectedProduce = "";
+
 
 formData.addEventListener("submit", async function (event) {
     event.preventDefault();
@@ -30,6 +34,16 @@ formData.addEventListener("submit", async function (event) {
         alert("Live locatie kon niet opgevraagd worden, geef je browser toestemming");
     }
 })
+
+produceOptions.forEach((button) => {
+    button.addEventListener("click", () => {
+    selectedProduce = button.dataset.produce;
+    
+    produceButton.textContent =  button.textContent.trim();
+    console.log(selectedProduce);
+    });
+});
+
 
 function getPosition() {
 
