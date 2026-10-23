@@ -1,0 +1,19 @@
+diff --git a/public/planting/index.html b/public/planting/index.html
+index 24b9a68..f8c17b0 100644
+--- a/public/planting/index.html
++++ b/public/planting/index.html
+@@ -26,11 +26,11 @@
+             </nav>
+             <form id="dataForm" class="dropDown">
+                 <div class="produceDropdown">
+-                    <button type="button">Produce ▾</button>
++                    <button type="button" id="produceButton">Produce ▾</button>
+ 
+                     <div class= "produceOptions">
+-                        <button type="button"> Wheat &#127806; </button>
+-                        <button type="button"> Corn &#127805; </button>
++                        <button type="button" data-produce="summerWheat"> Summer Wheat &#127806; </button>
++                        <button type="button" data-produce="corn"> Corn &#127805; </button>
+                     </div>
+                 </div>
+ 
