@@ -106,10 +106,10 @@ async function fetchData(paramString) {
     return {};
 }
 
-function tooMuchWind(data, settings) {
-    const chosenDate = dateInput.value;
-    const maxWind = settings.maxWind;
-    const maxWindGusts = settings.maxWindGusts;
+function tooMuchWind(data, settings, datum) {
+    const chosenDate = datum;
+    //const maxWind = settings.maxWind;
+    //const maxWindGusts = settings.maxWindGusts;
 
     data.hourly.time.forEach((time, index) => {
         if (time.startsWith(chosenDate)) {
@@ -118,22 +118,12 @@ function tooMuchWind(data, settings) {
             if(wind <= maxWind && windGusts <= maxWindGusts){
                 totalScorePlanting += 1.0;
             }
-            if ((wind > maxWind && wind < 13) && (windGusts <= maxWindGusts)) {
-                totalScorePlanting += 0.5;
-            }
-            //beide hebben kleine afwijking, maar opzich niet zo erg
-            if((wind > maxWind && wind < 13) && (windGusts > maxWindGusts && windGusts < 40)){
-                totalScorePlanting += 0.15;
-            }
-            if((wind <= maxWind && (windGusts > maxWindGusts && windGusts < 40))){
-                totalScorePlanting += 0.5;
-            }
-            /*
+            
             if (wind >= maxWind || windGusts >= maxWindGusts) { 
                 // diplay alleen wind in km/h niet gusts.
                 display(`Too Windy: ${wind}${data.hourly_units.wind_speed_10m}`, 'wind')
             }
-             */
+             
         }
     });
 }
@@ -145,17 +135,33 @@ function tooSnowy(data) {
         if (time.startsWith(chosenDate)) {
             const snow = data.hourly.snow_depth[index];
             if (snow > 0) {
-                //display(`It's snowing: ${snow}${data.hourly_units.snow_depth}`, 'snow')
+                display(`It's snowing: ${snow}${data.hourly_units.snow_depth}`, 'snow')
                 snowy = true;
             }
         }
     });
 }
 
-
-function calculatePlantingScore(data, datum) {
+//Hoofdfunctie voor het berekene scores voor planten
+function calculatePlantingScore(data, datum, settings) {
     let totalScore = 0.0;
     let snowy = false;
+    const maxWind = settings.maxWind;
+    const maxWindGusts = settings.maxWindGusts;
+    const maxTemp = settings.maxTemp;
+    const minTemp = settings.minTemp;
+    const maxMm = settings.maxMm;
+    const maxProbability = settings.maxProbability;
+    const minMoisture1_3cm = settings.minMoisture1_3cm;
+    const maxMoisture1_3cm = settings.maxMoisture1_3cm;
+
+    const minMoisture3_9cm = settings.minMoisture3_9cm;
+    const maxMoisture3_9cm = settings.maxMoisture3_9cm;
+
+    const minMoisture9_27cm = settings.minMoisture9_27cm;
+    const maxMoisture9_27cm = settings.maxMoisture9_27cm;
+     const minSoilTemp = settings.minSoilTemp;
+    const maxSoilTemp = settings.maxSoilTemp;
 
     data.hourly.time.forEach((time, index) => {
         if (time.startsWith(datum)) {
@@ -166,16 +172,23 @@ function calculatePlantingScore(data, datum) {
 
             const wind = data.hourly.wind_speed_10m[index];
             const windGusts = data.hourly.wind_gusts_10m[index];
-            if (wind <= 10 && windGusts <= 30) totalScore += 1.0;
-            else if (wind > 10 && wind < 13 && windGusts <= 30) totalScore += 0.5;
-            else if (wind > 10 && wind < 13 && windGusts > 30 && windGusts < 40) totalScore += 0.15;
-            else if (wind <= 10 && windGusts > 30 && windGusts < 40) totalScore += 0.5;
-
-            const temp = data.hourly.temperature_2m[index];
-            if (temp >= 5 && temp <= 15) {
+            if (wind <= maxWind && windGusts <= maxWindGusts) {
                 totalScore += 1.0;
             }
-            else if ((temp > 15 && temp < 20) || (temp < 5 && temp > 2)){
+            else if ((wind > maxWind && wind < (maxWind+3)) && windGusts <= maxWindGusts) {
+                totalScore += 0.5;
+            }
+            else if ((wind > maxWind && wind < (maxWind+3)) && ((windGusts > maxWindGusts) && (windGusts < (maxWindGusts+6)))){
+                totalScore += 0.15;
+            } 
+            else if ((wind <= maxWind ) && (windGusts > maxWindGusts && windGusts < maxWindGusts+6)) {
+                totalScore += 0.5;
+            }
+            const temp = data.hourly.temperature_2m[index];
+            if (temp >= minTemp && temp <= maxTemp) {
+                totalScore += 1.0;
+            }
+            else if ((temp > maxTemp && temp < maxTemp+3) || (temp < minTemp  && temp > minTemp-3)){
                 totalScore += 0.5;
             } 
 
@@ -230,30 +243,7 @@ function calculatePlantingScore(data, datum) {
     }
 }
 
-/*
-function checkAdvice(data){
-    if(snowy){
-        return 1;
-    }
-    else{
-        hoeveelheidPercentage = (totalScorePlanting / 96) * 100;
-        if(hoeveelheidPercentage >= 85){
-            return 4;
-        }
-        else if(hoeveelheidPercentage >= 60){
-            return 3;
-        }
-        else if(hoeveelheidPercentage >= 40){
-            return 2;
-        }
-        else{
-            return 1;
-        }
 
-       
-    }
-}
- */
 
 function rightTemperature(data, settings) {
     const maxTemp = settings.maxTemp;
@@ -265,15 +255,6 @@ function rightTemperature(data, settings) {
             const temp = data.hourly.temperature_2m[index];
             if (temp > maxTemp || temp < minTemp) {
                 display(`Not the right temperature: ${temp}${data.hourly_units.temperature_2m}`, 'temp')
-            }
-            if(temp >= minTemp && temp <= maxTemp){
-                totalScorePlanting += 1.0;
-            }
-            if(temp > maxTemp && temp < 20){
-                totalScorePlanting += 0.5;
-            }
-            if(temp < minTemp && temp > 2){
-                totalScorePlanting += 0.5;
             }
         }
     });
@@ -299,15 +280,6 @@ function checkPrecipitation(data, settings) {
                 display(`Too wet: ${mm}${hourlyUnits.precipitation}, ${probability}${hourlyUnits.precipitation_probability}`)
             }
 
-            if(mm <= maxMm && probability <= maxProbability){
-                totalScorePlanting += 1.0;
-            }
-            if(mm > maxMm && mm < 5 && probability <= maxProbability){
-                totalScorePlanting += 0.5;
-            }
-            if(mm <= maxMm && probability > maxProbability && probability < 40){
-                totalScorePlanting += 0.5;
-            }
 
         }
     })
@@ -340,16 +312,6 @@ function checkSoilMoisture(data, settings) {
             if (moisture9_27cm < minMoisture9_27cm || moisture9_27cm > maxMoisture9_27cm) {
                 display(`Soil moisture 9-27cm not right for planting ${moisture9_27cm}${data.hourly_units.soil_moisture_9_to_27cm}`, 'moisture9_27cm');
             }
-            //1-3cm het belangrijkste bij het planten
-            if(moisture1_3cm >= minMoisture1_3cm && moisture1_3cm <= maxMoisture1_3cm){
-                totalScorePlanting += 1.0;
-            }
-            if(moisture1_3cm > maxMoisture1_3cm && moisture1_3cm < 0.35){
-                totalScorePlanting += 0.5;
-            }
-            if(moisture1_3cm < minMoisture1_3cm && moisture1_3cm > 0.10){
-                totalScorePlanting += 0.5;
-            }
 
         }
     });
@@ -366,13 +328,6 @@ function rightSoilTemperature(data, settings) {
             if (soilTemp < minSoilTemp || soilTemp > maxSoilTemp) {
                 display(`Soil temperature not good: ${soilTemp}${data.hourly_units.soil_temperature_6cm}`, 'soilTemp');
             }
-            if(temp > maxTemp && temp < 20){
-                totalScorePlanting += 0.5;
-            }
-            if(temp < minTemp && temp > 2){
-                totalScorePlanting += 0.5;
-            }
-
         }
     });
 }
@@ -402,7 +357,8 @@ async function checkPlanting(paramString) {
     })
     const chosenDate = dateInput.value;
     const weekdatums = getAWeekAfterDate(chosenDate);
-    const scores = weekdatums.map(datum => calculatePlantingScore(data, datum));
+
+    const scores = weekdatums.map(datum => calculatePlantingScore(data, datum, settings));
     
     // tooSnowy(data);
     // tooMuchWind(data);
@@ -432,7 +388,8 @@ function getAWeekAfterDate(dateString){
 
         datums.push(formattedDate);
     }
-    return datums;
+    //console.log(datums);
+    return datums; 
 }
 
 
