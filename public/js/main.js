@@ -8,7 +8,7 @@ const produceButton = document.getElementById("produceButton");
 const produceOptions = document.querySelectorAll(".produceOptions button");
 
 let plantenChart = null;
-let selectedProduce = "";
+let selectedProduce = "summerWheat";
 
 const produceSettings = {
     summerWheat: {
@@ -115,9 +115,6 @@ function tooMuchWind(data, settings, datum) {
         if (time.startsWith(chosenDate)) {
             const wind = data.hourly.wind_speed_10m[index];
             const windGusts = data.hourly.wind_gusts_10m[index];
-            if(wind <= maxWind && windGusts <= maxWindGusts){
-                totalScorePlanting += 1.0;
-            }
             
             if (wind >= maxWind || windGusts >= maxWindGusts) { 
                 // diplay alleen wind in km/h niet gusts.
@@ -195,30 +192,30 @@ function calculatePlantingScore(data, datum, settings) {
         
             const mm = data.hourly.precipitation[index];
             const prob = data.hourly.precipitation_probability[index];
-            if (mm <= 2 && prob <= 20) {
+            if (mm <= maxMm && prob <= maxProbability) {
                 totalScore += 1.0;
             }
-            else if (mm > 2 && mm < 5 && prob <= 20) {
+            else if (mm > maxMm && mm < maxMm+3 && prob <= maxProbability) {
                 totalScore += 0.5;
             }
-            else if (mm <= 2 && prob > 20 && prob < 40) {
+            else if (mm <= maxMm && prob > maxProbability && prob < maxProbability+10) {
                 totalScore += 0.5;
             }
 
-            const m1 = data.hourly.soil_moisture_1_to_3cm[index];
-            if (m1 >= 0.18 && m1 <= 0.28) {
+            const soilMoist = data.hourly.soil_moisture_1_to_3cm[index];
+            if (soilMoist >= minMoisture1_3cm && soilMoist <= maxMoisture1_3cm) {
                 totalScore += 1.0;
             }
-            else if ((m1 > 0.28 && m1 < 0.35) || (m1 < 0.18 && m1 > 0.10)){
+            else if ((soilMoist > maxMoisture1_3cm && soilMoist < maxMoisture1_3cm+0.05) || (soilMoist < minMoisture1_3cm && soilMoist > minMoisture1_3cm-0.03)) {
                 totalScore += 0.5;
             } 
 
             
             const soilTemp = data.hourly.soil_temperature_6cm[index];
-            if (soilTemp >= 5 && soilTemp <= 15) { 
+            if (soilTemp >= minSoilTemp && soilTemp <= maxSoilTemp) { 
                 totalScore += 1.0;
             }
-            else if ((soilTemp > 15 && soilTemp < 20) || (soilTemp < 5 && soilTemp > 2)) {
+            else if ((soilTemp > maxSoilTemp && soilTemp < maxSoilTemp+3) || (soilTemp < minSoilTemp && soilTemp > minSoilTemp-2)) {
                 totalScore += 0.5;
             }
         }
@@ -227,15 +224,15 @@ function calculatePlantingScore(data, datum, settings) {
     if (snowy) {
         return 1;
     }
-    //24uren in een dag en 5 categorieen - snowy = 4cat, dus 24*4 = 96 maxscore
-    const percentage = (totalScore / 96) * 100;
-    if (percentage >= 90) {
+    //24uren in een dag en 5 categorieen, dus 24 * 5 = 120 maxscore
+    const percentage = (totalScore / 120) * 100;
+    if (percentage >= 100) {
         return 4;
     }
-    if (percentage >= 60) {
+    if (percentage >= 85) {
         return 3;
     }
-    if (percentage >= 40) {
+    if (percentage >= 60) {
         return 2;
     }
     else {
@@ -414,7 +411,7 @@ function createChart(datums,scores){
     data: {
       labels: datums,
       datasets: [{
-        label: 'Planting advice',
+        label: `Planting advice today: ${scores[0]}`,
         data: scores, 
         backgroundColor: barColors,
         borderWidth: 1
