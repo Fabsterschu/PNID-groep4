@@ -328,6 +328,9 @@ function rightSoilTemperature(data, settings, datum) {
     });
 }
 
+function getStarRating(score) {
+    return "⭐".repeat(score);
+}
 
 function display(tekst, categorie) {
     const newElement = document.createElement(`p`);
@@ -430,7 +433,7 @@ function createChart(datums,scores, data, settings){
     data: {
       labels: datums,
       datasets: [{
-        label: `Planting advice today: ${scores[0]}`,
+        label: `Planting advice today: ${getStarRating(scores[0])}`,
         data: scores, 
         backgroundColor: barColors,
         borderWidth: 1
