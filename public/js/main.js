@@ -108,8 +108,8 @@ async function fetchData(paramString) {
 
 function tooMuchWind(data, settings, datum) {
     const chosenDate = datum;
-    //const maxWind = settings.maxWind;
-    //const maxWindGusts = settings.maxWindGusts;
+    const maxWind = settings.maxWind;
+    const maxWindGusts = settings.maxWindGusts;
 
     data.hourly.time.forEach((time, index) => {
         if (time.startsWith(chosenDate)) {
@@ -125,15 +125,14 @@ function tooMuchWind(data, settings, datum) {
     });
 }
 
-function tooSnowy(data) {
-    const chosenDate = dateInput.value;
+function tooSnowy(data,datum) {
+    const chosenDate = datum;
     
     data.hourly.time.forEach((time, index) => {
         if (time.startsWith(chosenDate)) {
             const snow = data.hourly.snow_depth[index];
             if (snow > 0) {
                 display(`It's snowing: ${snow}${data.hourly_units.snow_depth}`, 'snow')
-                snowy = true;
             }
         }
     });
@@ -242,10 +241,10 @@ function calculatePlantingScore(data, datum, settings) {
 
 
 
-function rightTemperature(data, settings) {
+function rightTemperature(data, settings, datum) {
     const maxTemp = settings.maxTemp;
     const minTemp = settings.minTemp;
-    const chosenDate = dateInput.value;
+    const chosenDate = datum;
 
     data.hourly.time.forEach((time, index) => {
         if (time.startsWith(chosenDate)) {
@@ -258,13 +257,13 @@ function rightTemperature(data, settings) {
 
 }
 
-function checkPrecipitation(data, settings) {
+function checkPrecipitation(data, settings, datum) {
     // 0 tot max 2 mm per dag en minder dan 20% precipitation voor het planten zelf (en 2-3 dagen ervoor)
     // 15 tot 25 mm opgeteld over 7 - 14 dagen en 50% precipitation voor de 1-2 weken erna
     // voor het PoC ga ik nu uit van alleen planten
     const maxMm = settings.maxMm;
     const maxProbability = settings.maxProbability;
-    const chosenDate = dateInput.value;
+    const chosenDate = datum;
     const hourlyData = data.hourly;
     const hourlyUnits = data.hourly_units;
 
@@ -283,7 +282,7 @@ function checkPrecipitation(data, settings) {
 }
 
 
-function checkSoilMoisture(data, settings) {
+function checkSoilMoisture(data, settings, datum) {
     const minMoisture1_3cm = settings.minMoisture1_3cm;
     const maxMoisture1_3cm = settings.maxMoisture1_3cm;
 
@@ -292,7 +291,7 @@ function checkSoilMoisture(data, settings) {
 
     const minMoisture9_27cm = settings.minMoisture9_27cm;
     const maxMoisture9_27cm = settings.maxMoisture9_27cm;
-    const chosenDate = dateInput.value;
+    const chosenDate = datum;
 
     data.hourly.time.forEach((time, index) => {
         if (time.startsWith(chosenDate)) {
@@ -314,10 +313,10 @@ function checkSoilMoisture(data, settings) {
     });
 }
 
-function rightSoilTemperature(data, settings) {
+function rightSoilTemperature(data, settings, datum) {
     const minSoilTemp = settings.minSoilTemp;
     const maxSoilTemp = settings.maxSoilTemp;
-    const chosenDate = dateInput.value;
+    const chosenDate = datum;
 
     data.hourly.time.forEach((time, index) => {
         if (time.startsWith(chosenDate)) {
@@ -368,7 +367,8 @@ async function checkPlanting(paramString) {
     if (scoreNr) {
         scoreNr.textContent = scores[0]; 
     }
-    createChart(weekdatums, scores);
+    showDetailedAdvice(data,settings,chosenDate);
+    createChart(weekdatums, scores, data, settings);
 
 }
 
@@ -389,10 +389,25 @@ function getAWeekAfterDate(dateString){
     return datums; 
 }
 
+function showDetailedAdvice(data,settings,datum){
+    Array.from(mainBody.children).forEach((child) => {
+        if (child.nodeName === "P") {
+            child.remove();
+        }
+    });
+
+    tooSnowy(data, datum);
+    tooMuchWind(data, settings, datum);
+    rightTemperature(data, settings, datum);
+    checkPrecipitation(data, settings, datum);
+    checkSoilMoisture(data, settings, datum);
+    rightSoilTemperature(data, settings, datum);
+}
 
 
 
-function createChart(datums,scores){
+
+function createChart(datums,scores, data, settings){
   const ctx = document.getElementById('myChart');
 
   if (plantenChart) {
@@ -418,6 +433,15 @@ function createChart(datums,scores){
       }]
     },
     options: {
+        onClick: (event, activeElements) => {
+        if (activeElements.length > 0) {
+          const clickedIndex = activeElements[0].index;
+          const clickedDate = datums[clickedIndex];
+          
+          
+          showDetailedAdvice(data, settings, clickedDate);
+        }
+      },
       scales: {
         y: {
           beginAtZero: true

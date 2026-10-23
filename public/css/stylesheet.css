@@ -133,7 +133,7 @@ nav {
     margin-bottom: 20px;
     border-radius: 10px;
 }
-/* Legenda container */
+
 .boxLegenda {
     display: flex;
     justify-content: center;
@@ -152,7 +152,6 @@ nav {
     color: darkgreen;
 }
 
-/* De gekleurde blokjes */
 .color-box {
     width: 18px;
     height: 18px;
@@ -162,18 +161,18 @@ nav {
 }
 
 
-.Schale1 {
+#Schale1 {
     background-color: #c62828; 
 }
 
-.Schale2 {
+#Schale2 {
     background-color: #ef6c00; 
 }
 
-.Schale3 {
+#Schale3 {
     background-color: #558b2f; 
 }
 
-.Schale4 {
+#Schale4 {
     background-color: #2e7d32; 
 }
