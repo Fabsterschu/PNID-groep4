@@ -24,7 +24,16 @@
                 <a class="navButton" href="/harvesting" aria-current="page">Harvesting</a>
                 <a class="navButton" href="/heat">Heat stress</a>
             </nav>
-            <form id="dataForm">
+            <form id="dataForm" class="dropDown">
+                <div class="produceDropdown">
+                    <button type="button" id="produceButton">Produce ▾</button>
+
+                    <div class= "produceOptions">
+                        <button type="button" data-produce="summerWheat"> Summer Wheat &#127806;  </button>
+                        <button type="button" data-produce="silageCorn"> Silage Corn &#127805; </button>
+                    </div>
+                </div>
+
                 <input type="date" name="date" id="dateInput">
                 <!input type="text" name="lattitude" value="52.52">
                 <!input type="text" name="longitude" value="13.41">

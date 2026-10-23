@@ -2,6 +2,50 @@ const mainBody = document.getElementById("mainBody");
 const plantButton = document.getElementById("inputButton");
 const dateInput = document.getElementById("dateInput");
 const formData = document.getElementById("dataForm");
+const produceButton = document.getElementById("produceButton");
+const produceOptions = document.querySelectorAll(".produceOptions button");
+let selectedProduce = "";
+
+const produceSettings = {
+    summerWheat: {
+        maxWind: 10,
+        maxWindGusts: 30,
+        minTemp: 5,
+        maxTemp: 15, 
+        maxMm: 2,
+        maxProbability: 20,
+        minMoisture1_3cm: 0.18,
+        maxMoisture1_3cm: 0.28,
+        
+        minMoisture3_9cm: 0.200,
+        maxMoisture3_9cm: 0.300,
+        
+        minMoisture9_27cm: 0.220,
+        maxMoisture9_27cm: 0.320,
+        
+        minSoilTemp: 5,
+        maxSoilTemp: 15
+    },
+    silageCorn: {
+        maxWind: 20,
+        maxWindGusts: 35,
+        minTemp: 8,
+        maxTemp: 30, 
+        maxMm: 2,
+        maxProbability: 40,
+        minMoisture1_3cm: 0.18,
+        maxMoisture1_3cm: 0.30,
+        
+        minMoisture3_9cm: 0.20,
+        maxMoisture3_9cm: 0.32,
+    
+        minMoisture9_27cm: 0.20,
+        maxMoisture9_27cm: 0.32,
+        
+        minSoilTemp: 10,
+        maxSoilTemp: 30
+    }   
+};
 
 formData.addEventListener("submit", async function (event) {
     event.preventDefault();
@@ -31,6 +75,15 @@ formData.addEventListener("submit", async function (event) {
     }
 })
 
+produceOptions.forEach((button) => {
+    button.addEventListener("click", () => {
+    selectedProduce = button.dataset.produce;
+    
+    produceButton.textContent =  button.textContent.trim();
+    console.log(selectedProduce);
+    });
+});
+
 function getPosition() {
 
 }
@@ -49,10 +102,10 @@ async function fetchData(paramString) {
     return {};
 }
 
-function tooMuchWind(data) {
+function tooMuchWind(data, settings) {
     const chosenDate = dateInput.value;
-    const maxWind = 10;
-    const maxWindGusts = 30;
+    const maxWind = settings.maxWind;
+    const maxWindGusts = settings.maxWindGusts;
 
     data.hourly.time.forEach((time, index) => {
         if (time.startsWith(chosenDate)) {
@@ -60,7 +113,7 @@ function tooMuchWind(data) {
             const windGusts = data.hourly.wind_gusts_10m[index];
             if (wind >= maxWind || windGusts >= maxWindGusts) { 
                 // diplay alleen wind in km/h niet gusts.
-                display(`Hella Windy: ${wind}${data.hourly_units.wind_speed_10m}`, 'wind')
+                display(`Too Windy: ${wind}${data.hourly_units.wind_speed_10m}`, 'wind')
             }
         }
     });
@@ -79,9 +132,9 @@ function tooSnowy(data) {
     });
 }
 
-function rightTemperature(data) {
-    const maxTemp = 15;
-    const minTemp = 5;
+function rightTemperature(data, settings) {
+    const maxTemp = settings.maxTemp;
+    const minTemp = settings.minTemp;
     const chosenDate = dateInput.value;
 
     data.hourly.time.forEach((time, index) => {
@@ -95,12 +148,12 @@ function rightTemperature(data) {
 
 }
 
-function checkPrecipitation(data) {
+function checkPrecipitation(data, settings) {
     // 0 tot max 2 mm per dag en minder dan 20% precipitation voor het planten zelf (en 2-3 dagen ervoor)
     // 15 tot 25 mm opgeteld over 7 - 14 dagen en 50% precipitation voor de 1-2 weken erna
     // voor het PoC ga ik nu uit van alleen planten
-    const maxMm = 2;
-    const maxProbability = 20;
+    const maxMm = settings.maxMm;
+    const maxProbability = settings.maxProbability;
     const chosenDate = dateInput.value;
     const hourlyData = data.hourly;
     const hourlyUnits = data.hourly_units;
@@ -118,15 +171,15 @@ function checkPrecipitation(data) {
 }
 
 
-function checkSoilMoisture(data) {
-    const minMoisture1_3cm = 0.18;
-    const maxMoisture1_3cm = 0.28;
+function checkSoilMoisture(data, settings) {
+    const minMoisture1_3cm = settings.minMoisture1_3cm;
+    const maxMoisture1_3cm = settings.maxMoisture1_3cm;
 
-    const minMoisture3_9cm = 0.200;
-    const maxMoisture3_9cm = 0.300;
+    const minMoisture3_9cm = settings.minMoisture3_9cm;
+    const maxMoisture3_9cm = settings.maxMoisture3_9cm;
 
-    const minMoisture9_27cm = 0.220;
-    const maxMoisture9_27cm = 0.320;
+    const minMoisture9_27cm = settings.minMoisture9_27cm;
+    const maxMoisture9_27cm = settings.maxMoisture9_27cm;
     const chosenDate = dateInput.value;
 
     data.hourly.time.forEach((time, index) => {
@@ -148,16 +201,16 @@ function checkSoilMoisture(data) {
     });
 }
 
-function rightSoilTemperature(data) {
-    const minTemp = 5;
-    const maxTemp = 15;
+function rightSoilTemperature(data, settings) {
+    const minSoilTemp = settings.minSoilTemp;
+    const maxSoilTemp = settings.maxSoilTemp;
     const chosenDate = dateInput.value;
 
     data.hourly.time.forEach((time, index) => {
         if (time.startsWith(chosenDate)) {
-            const temp = data.hourly.soil_temperature_6cm[index];
-            if (temp < minTemp || temp > maxTemp) {
-                display(`Soil temperature not good: ${temp}${data.hourly_units.soil_temperature_6cm}`, 'temp');
+            const soilTemp = data.hourly.soil_temperature_6cm[index];
+            if (soilTemp < minSoilTemp || soilTemp > maxSoilTemp) {
+                display(`Soil temperature not good: ${soilTemp}${data.hourly_units.soil_temperature_6cm}`, 'soilTemp');
             }
         }
     });
@@ -178,6 +231,7 @@ function display(tekst, categorie) {
 
 
 async function checkPlanting(paramString) {
+    const settings = produceSettings[selectedProduce];
     const data = await fetchData(paramString);
     console.log(data);
     Array.from(mainBody.children).forEach((child) => {
@@ -185,12 +239,12 @@ async function checkPlanting(paramString) {
             child.remove();
         }
     })
-    tooMuchWind(data);
+    tooMuchWind(data, settings);
     tooSnowy(data);
-    rightTemperature(data);
-    checkPrecipitation(data);
-    checkSoilMoisture(data);
-    rightSoilTemperature(data);
+    rightTemperature(data, settings);
+    checkPrecipitation(data, settings);
+    checkSoilMoisture(data, settings);
+    rightSoilTemperature(data, settings);
 
 }
 
