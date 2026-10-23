@@ -409,7 +409,11 @@ function showDetailedAdvice(data,settings,datum){
 
 function createChart(datums,scores, data, settings){
   const ctx = document.getElementById('myChart');
+  const barChartLegenda = document.querySelector('.chartLegenda');
 
+  if(barChartLegenda){
+    barChartLegenda.style.display = 'block';
+  }
   if (plantenChart) {
     plantenChart.destroy();
   }
