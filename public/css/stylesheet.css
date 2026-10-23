@@ -27,6 +27,8 @@ p {
     text-shadow: 2px 2px 4px rgb(6, 139, 66);
 }
 
+p { font-size:xx-large;}
+
 h3 {
     /* plan ... insights. */
     color: rgb(0, 148, 67);
