@@ -1,5 +1,5 @@
 const express = require('express');
-const portNr = 80;
+const portNr = 3000;
 const app = express();
 app.use(express.static('public'));
 
