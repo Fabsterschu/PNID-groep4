@@ -1,6 +1,6 @@
 FROM node:20-alpine
 
-WORKDIR /urs/src/tropometrics_app
+WORKDIR /usr/src/tropometrics_app
 
 COPY package.json ./
 
