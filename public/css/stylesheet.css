@@ -7,12 +7,35 @@ body{
 
 #Title {
     text-align: center;
+    text-shadow: 2px 2px 4px rgb(22, 124, 198);
 }
 
-h1{
+h1 {
+    /* Weather Predicitions*/
     color: white;
     font-weight: lighter;
     font-family: "Press Start 2P", "limelight";
+}
+
+h2,
+p {
+    /* Welcome... & 🌱*/
+    color: white;
+    font-weight: lighter;
+    font-family: "Press Start 2P", "limelight";
+    text-align: center;
+    text-shadow: 2px 2px 4px rgb(6, 139, 66);
+}
+
+p { font-size:xx-large;}
+
+h3 {
+    /* plan ... insights. */
+    color: rgb(0, 148, 67);
+    font-weight: lighter;
+    font-family: "limelight";
+    text-align: center;
+
 }
 
 .navButton {
