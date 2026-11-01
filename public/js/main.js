@@ -8,6 +8,7 @@ const produceButton = document.getElementById("produceButton");
 const produceOptions = document.querySelectorAll(".produceOptions button");
 
 let plantenChart = null;
+let hourlyChart = null;
 let selectedProduce = "summerWheat";
 
 const produceSettings = {
@@ -81,16 +82,12 @@ formData.addEventListener("submit", async function (event) {
 
 produceOptions.forEach((button) => {
     button.addEventListener("click", () => {
-    selectedProduce = button.dataset.produce;
+        selectedProduce = button.dataset.produce;
     
     produceButton.textContent =  button.textContent.trim();
     console.log(selectedProduce);
     });
 });
-
-function getPosition() {
-
-}
 
 async function fetchData(paramString) {
     try {
@@ -106,357 +103,346 @@ async function fetchData(paramString) {
     return {};
 }
 
-function tooMuchWind(data, settings, datum) {
-    const chosenDate = datum;
+// Category checks
+function checkWind(wind, windGusts, settings) {
     const maxWind = settings.maxWind;
     const maxWindGusts = settings.maxWindGusts;
 
-    data.hourly.time.forEach((time, index) => {
-        if (time.startsWith(chosenDate)) {
-            const wind = data.hourly.wind_speed_10m[index];
-            const windGusts = data.hourly.wind_gusts_10m[index];
-            
-            if (wind >= maxWind || windGusts >= maxWindGusts) { 
-                // diplay alleen wind in km/h niet gusts.
-                display(`Too Windy: ${wind}${data.hourly_units.wind_speed_10m}`, 'wind')
-            }
-             
-        }
-    });
+    if (wind <= maxWind && windGusts <= maxWindGusts) {
+        return { score: 1.0, warning: null };
+    } else if ((wind > maxWind && wind < (maxWind + 3)) && windGusts <= maxWindGusts) {
+        return { score: 0.5, warning: `Wind speed is slightly high (${wind} km/h)` };
+    } else if ((wind > maxWind && wind < (maxWind + 3)) && ((windGusts > maxWindGusts) && (windGusts < (maxWindGusts + 6)))) {
+        return { score: 0.15, warning: `Wind speed and gusts are high` };
+    } else if ((wind <= maxWind) && (windGusts > maxWindGusts && windGusts < maxWindGusts + 6)) {
+        return { score: 0.5, warning: `Wind gusts are slightly high` };
+    } else {
+        return { score: 0.0, warning: `Wind is too strong for planting (${wind} km/h)` };
+    }
 }
 
-function tooSnowy(data,datum) {
-    const chosenDate = datum;
-    
-    data.hourly.time.forEach((time, index) => {
-        if (time.startsWith(chosenDate)) {
-            const snow = data.hourly.snow_depth[index];
-            if (snow > 0) {
-                display(`It's snowing: ${snow}${data.hourly_units.snow_depth}`, 'snow')
-            }
-        }
-    });
-}
-
-//Hoofdfunctie voor het berekene scores voor planten
-function calculatePlantingScore(data, datum, settings) {
-    let totalScore = 0.0;
-    let snowy = false;
-    const maxWind = settings.maxWind;
-    const maxWindGusts = settings.maxWindGusts;
+function checkTemp(temp, settings) {
     const maxTemp = settings.maxTemp;
     const minTemp = settings.minTemp;
+
+    if (temp >= minTemp && temp <= maxTemp) {
+        return { score: 1.0, warning: null };
+    } else if ((temp > maxTemp && temp < maxTemp + 3) || (temp < minTemp && temp > minTemp - 3)) {
+        return { score: 0.5, warning: `Suboptimal temperature (${temp}°C), but planting is still possible` };
+    } else {
+        return { score: 0.0, warning: `Unfavorable temperature: ${temp}°C (ideal: ${minTemp}-${maxTemp}°C)` };
+    }
+}
+
+function checkMm(mm, prob, settings) {
     const maxMm = settings.maxMm;
     const maxProbability = settings.maxProbability;
+
+    if (mm <= maxMm && prob <= maxProbability) {
+        return { score: 1.0, warning: null };
+    } else if (mm > maxMm && mm < maxMm + 3 && prob <= maxProbability) {
+        return { score: 0.5, warning: `Light rainfall expected (${mm} mm)` };
+    } else if (mm <= maxMm && prob > maxProbability && prob < maxProbability + 10) {
+        return { score: 0.5, warning: `Moderate precipitation probability (${prob}%)` };
+    } else {
+        return { score: 0.0, warning: `High risk of heavy rainfall (${mm} mm, ${prob}%)` };
+    }
+}
+
+function checkSoilMoisture(soilMoist, settings) {
     const minMoisture1_3cm = settings.minMoisture1_3cm;
     const maxMoisture1_3cm = settings.maxMoisture1_3cm;
 
-    const minMoisture3_9cm = settings.minMoisture3_9cm;
-    const maxMoisture3_9cm = settings.maxMoisture3_9cm;
+    if (soilMoist >= minMoisture1_3cm && soilMoist <= maxMoisture1_3cm) {
+        return { score: 1.0, warning: null };
+    } else if ((soilMoist > maxMoisture1_3cm && soilMoist < maxMoisture1_3cm + 0.05) || 
+               (soilMoist < minMoisture1_3cm && soilMoist > minMoisture1_3cm - 0.03)) {
+        return { score: 0.5, warning: `Soil moisture (1-3cm) is slightly outside optimal range` };
+    } else {
+        return { score: 0.0, warning: `Soil moisture (1-3cm) is unsuitable for planting` };
+    }
+}
 
-    const minMoisture9_27cm = settings.minMoisture9_27cm;
-    const maxMoisture9_27cm = settings.maxMoisture9_27cm;
-     const minSoilTemp = settings.minSoilTemp;
+function checkSoilTemp(soilTemp, settings) {
+    const minSoilTemp = settings.minSoilTemp;
     const maxSoilTemp = settings.maxSoilTemp;
+
+    if (soilTemp >= minSoilTemp && soilTemp <= maxSoilTemp) { 
+        return { score: 1.0, warning: null };
+    } else if ((soilTemp > maxSoilTemp && soilTemp < maxSoilTemp + 3) || 
+               (soilTemp < minSoilTemp && soilTemp > minSoilTemp - 2)) {
+        return { score: 0.5, warning: `Soil temperature (${soilTemp}°C) is not ideal, but planting is possible` };
+    } else {
+        return { score: 0.0, warning: `Soil temperature is not suitable for planting: ${soilTemp}°C` };
+    }
+}
+
+function evaluateHour(uur, settings) {
+    if (uur.snow > 0) {
+        return { scoreTot: 1, warnings: [`Snow detected on the ground`] };
+    }
+
+    const windScore = checkWind(uur.wind, uur.gusts, settings);
+    const tempScore = checkTemp(uur.temp, settings);
+    const rainScore = checkMm(uur.mm, uur.prob, settings);
+    const moistScore = checkSoilMoisture(uur.moisture, settings);
+    const soilTempScore = checkSoilTemp(uur.soilTemp, settings);
+
+    const totaal = windScore.score + tempScore.score + rainScore.score + moistScore.score + soilTempScore.score;
+    const percentage = (totaal / 5.0) * 100;
+
+    let scoreTot = 1;
+    if (percentage >= 85) {
+        scoreTot = 4;
+    } else if (percentage >= 60) {
+        scoreTot = 3;
+    } else if (percentage >= 40) {
+        scoreTot = 2;
+    }
+
+    const hourWarnings = [
+        windScore.warning, 
+        tempScore.warning, 
+        rainScore.warning, 
+        moistScore.warning, 
+        soilTempScore.warning
+    ].filter(Boolean);
+
+    return { scoreTot, warnings: hourWarnings };
+}
+
+function getUren(data, datum) {
+    const uren = [];
+    if (!data.hourly || !data.hourly.time) return uren;
 
     data.hourly.time.forEach((time, index) => {
         if (time.startsWith(datum)) {
-            
-            if (data.hourly.snow_depth[index] > 0) {
-                snowy = true;
-            }
+            const timeLabel = time.split('T')[1].substring(0, 5);
 
-            const wind = data.hourly.wind_speed_10m[index];
-            const windGusts = data.hourly.wind_gusts_10m[index];
-            if (wind <= maxWind && windGusts <= maxWindGusts) {
-                totalScore += 1.0;
-            }
-            else if ((wind > maxWind && wind < (maxWind+3)) && windGusts <= maxWindGusts) {
-                totalScore += 0.5;
-            }
-            else if ((wind > maxWind && wind < (maxWind+3)) && ((windGusts > maxWindGusts) && (windGusts < (maxWindGusts+6)))){
-                totalScore += 0.15;
-            } 
-            else if ((wind <= maxWind ) && (windGusts > maxWindGusts && windGusts < maxWindGusts+6)) {
-                totalScore += 0.5;
-            }
-            const temp = data.hourly.temperature_2m[index];
-            if (temp >= minTemp && temp <= maxTemp) {
-                totalScore += 1.0;
-            }
-            else if ((temp > maxTemp && temp < maxTemp+3) || (temp < minTemp  && temp > minTemp-3)){
-                totalScore += 0.5;
-            } 
+            uren.push({
+                index: index,
+                timeLabel: timeLabel,
+                temp: data.hourly.temperature_2m[index],
+                wind: data.hourly.wind_speed_10m[index],
+                gusts: data.hourly.wind_gusts_10m[index],
+                mm: data.hourly.precipitation[index],
+                prob: data.hourly.precipitation_probability[index],
+                moisture: data.hourly.soil_moisture_1_to_3cm[index],
+                soilTemp: data.hourly.soil_temperature_6cm[index],
+                snow: data.hourly.snow_depth ? data.hourly.snow_depth[index] : 0
+            });
+        }
+    });
+    return uren;
+}
 
-        
-            const mm = data.hourly.precipitation[index];
-            const prob = data.hourly.precipitation_probability[index];
-            if (mm <= maxMm && prob <= maxProbability) {
-                totalScore += 1.0;
-            }
-            else if (mm > maxMm && mm < maxMm+3 && prob <= maxProbability) {
-                totalScore += 0.5;
-            }
-            else if (mm <= maxMm && prob > maxProbability && prob < maxProbability+10) {
-                totalScore += 0.5;
-            }
+function checkPlantingConditions(data, datum, settings) {
+    const uren = getUren(data, datum);
 
-            const soilMoist = data.hourly.soil_moisture_1_to_3cm[index];
-            if (soilMoist >= minMoisture1_3cm && soilMoist <= maxMoisture1_3cm) {
-                totalScore += 1.0;
-            }
-            else if ((soilMoist > maxMoisture1_3cm && soilMoist < maxMoisture1_3cm+0.05) || (soilMoist < minMoisture1_3cm && soilMoist > minMoisture1_3cm-0.03)) {
-                totalScore += 0.5;
-            } 
+    if (uren.length === 0) {
+        return { labels: [], hourlyScores: [], dailyScore: 1, warnings: [] };
+    }
 
-            
-            const soilTemp = data.hourly.soil_temperature_6cm[index];
-            if (soilTemp >= minSoilTemp && soilTemp <= maxSoilTemp) { 
-                totalScore += 1.0;
-            }
-            else if ((soilTemp > maxSoilTemp && soilTemp < maxSoilTemp+3) || (soilTemp < minSoilTemp && soilTemp > minSoilTemp-2)) {
-                totalScore += 0.5;
-            }
+    const evaluations = uren.map(uur => evaluateHour(uur, settings));
+    const labels = uren.map(uur => uur.timeLabel);
+    const hourlyScores = evaluations.map(e => e.scoreTot);
+
+    const allWarningsForDay = [];
+    evaluations.forEach(e => {
+        if (e.warnings) {
+            e.warnings.forEach(w => {
+                if (!allWarningsForDay.includes(w)) {
+                    allWarningsForDay.push(w);
+                }
+            });
         }
     });
 
-    if (snowy) {
-        return 1;
-    }
-    //24uren in een dag en 5 categorieen, dus 24 * 5 = 120 maxscore
-    const percentage = (totalScore / 120) * 100;
-    if (percentage >= 100) {
-        return 4;
-    }
-    if (percentage >= 85) {
-        return 3;
-    }
-    if (percentage >= 60) {
-        return 2;
-    }
-    else {
-    return 1;
-    }
-}
+    const sum = hourlyScores.reduce((acc, curr) => acc + curr, 0);
+    const avg = sum / hourlyScores.length;
 
+    let dailyScore = 1;
+    if (avg >= 3.5) dailyScore = 4;
+    else if (avg >= 2.7) dailyScore = 3;
+    else if (avg >= 1.8) dailyScore = 2;
 
-
-function rightTemperature(data, settings, datum) {
-    const maxTemp = settings.maxTemp;
-    const minTemp = settings.minTemp;
-    const chosenDate = datum;
-
-    data.hourly.time.forEach((time, index) => {
-        if (time.startsWith(chosenDate)) {
-            const temp = data.hourly.temperature_2m[index];
-            if (temp > maxTemp || temp < minTemp) {
-                display(`Not the right temperature: ${temp}${data.hourly_units.temperature_2m}`, 'temp')
-            }
-        }
-    });
-
-}
-
-function checkPrecipitation(data, settings, datum) {
-    // 0 tot max 2 mm per dag en minder dan 20% precipitation voor het planten zelf (en 2-3 dagen ervoor)
-    // 15 tot 25 mm opgeteld over 7 - 14 dagen en 50% precipitation voor de 1-2 weken erna
-    // voor het PoC ga ik nu uit van alleen planten
-    const maxMm = settings.maxMm;
-    const maxProbability = settings.maxProbability;
-    const chosenDate = datum;
-    const hourlyData = data.hourly;
-    const hourlyUnits = data.hourly_units;
-
-    hourlyData.time.forEach((time, index) => {
-        if (time.startsWith(chosenDate)) {
-            const mm = hourlyData.precipitation[index];
-            const probability = hourlyData.precipitation_probability[index];
-
-            if (mm > maxMm || probability > maxProbability) {
-                display(`Too wet: ${mm}${hourlyUnits.precipitation}, ${probability}${hourlyUnits.precipitation_probability}`)
-            }
-
-
-        }
-    })
-}
-
-
-function checkSoilMoisture(data, settings, datum) {
-    const minMoisture1_3cm = settings.minMoisture1_3cm;
-    const maxMoisture1_3cm = settings.maxMoisture1_3cm;
-
-    const minMoisture3_9cm = settings.minMoisture3_9cm;
-    const maxMoisture3_9cm = settings.maxMoisture3_9cm;
-
-    const minMoisture9_27cm = settings.minMoisture9_27cm;
-    const maxMoisture9_27cm = settings.maxMoisture9_27cm;
-    const chosenDate = datum;
-
-    data.hourly.time.forEach((time, index) => {
-        if (time.startsWith(chosenDate)) {
-            const moisture1_3cm = data.hourly.soil_moisture_1_to_3cm[index];
-            const moisture3_9cm = data.hourly.soil_moisture_3_to_9cm[index];
-            const moisture9_27cm = data.hourly.soil_moisture_9_to_27cm[index];
-
-            if (moisture1_3cm < minMoisture1_3cm || moisture1_3cm > maxMoisture1_3cm) {
-                display(`Soil moisture 1-3cm not right for planting: ${moisture1_3cm}${data.hourly_units.soil_moisture_1_to_3cm}`, 'moisture1_3cm');
-            }
-            if (moisture3_9cm < minMoisture3_9cm || moisture3_9cm > maxMoisture3_9cm) {
-                display(`Soil moisture 3-9cm not right for planting: ${moisture3_9cm}${data.hourly_units.soil_moisture_3_to_9cm}`, 'moisture3_9cm');
-            }
-            if (moisture9_27cm < minMoisture9_27cm || moisture9_27cm > maxMoisture9_27cm) {
-                display(`Soil moisture 9-27cm not right for planting ${moisture9_27cm}${data.hourly_units.soil_moisture_9_to_27cm}`, 'moisture9_27cm');
-            }
-
-        }
-    });
-}
-
-function rightSoilTemperature(data, settings, datum) {
-    const minSoilTemp = settings.minSoilTemp;
-    const maxSoilTemp = settings.maxSoilTemp;
-    const chosenDate = datum;
-
-    data.hourly.time.forEach((time, index) => {
-        if (time.startsWith(chosenDate)) {
-            const soilTemp = data.hourly.soil_temperature_6cm[index];
-            if (soilTemp < minSoilTemp || soilTemp > maxSoilTemp) {
-                display(`Soil temperature not good: ${soilTemp}${data.hourly_units.soil_temperature_6cm}`, 'soilTemp');
-            }
-        }
-    });
+    return {
+        labels: labels, 
+        hourlyScores: hourlyScores,
+        dailyScore: dailyScore,    
+        warnings: allWarningsForDay
+    };
 }
 
 function getStarRating(score) {
-    return "⭐".repeat(score);
+    return "⭐".repeat(score || 1);
 }
-
-function display(tekst, categorie) {
-    const newElement = document.createElement(`p`);
-    newElement.classList.add('advies');
-
-    if (categorie) {
-        newElement.classList.add(categorie);
-    }
-
-    newElement.innerText = tekst;
-    mainBody.appendChild(newElement);
-}
-
 
 async function checkPlanting(paramString) {
-    const settings = produceSettings[selectedProduce];
+    const settings = produceSettings[selectedProduce] || produceSettings.summerWheat;
     const data = await fetchData(paramString);
-    console.log(data);
-    Array.from(mainBody.children).forEach((child) => {
-        if (child.nodeName == "P") {
-            child.remove();
-        }
-    })
+
     const chosenDate = dateInput.value;
     const weekdatums = getAWeekAfterDate(chosenDate);
 
-    const scores = weekdatums.map(datum => calculatePlantingScore(data, datum, settings));
-    
-    // tooSnowy(data);
-    // tooMuchWind(data);
-    // rightTemperature(data);
-    // checkPrecipitation(data);
-    // checkSoilMoisture(data);
-    // rightSoilTemperature(data);
-   // const adviceNumber = checkAdvice(data);
+    const weekResults = weekdatums.map(datum => checkPlantingConditions(data, datum, settings));
+    const dailyScores = weekResults.map(res => res.dailyScore);
 
     if (scoreNr) {
-        scoreNr.textContent = scores[0]; 
+        scoreNr.textContent = dailyScores[0]; 
     }
-    showDetailedAdvice(data,settings,chosenDate);
-    createChart(weekdatums, scores, data, settings);
-
+    
+    createChart(weekdatums, dailyScores, data, settings);
+    
+    const firstDay = weekResults[0];
+    createHourlyChart(firstDay.labels, firstDay.hourlyScores, chosenDate);
 }
 
-//Deze functie geeft een array terug met de 7dagen na gekozen datum, incl gekozen datum
-function getAWeekAfterDate(dateString){
-   const datums = [];
+function getAWeekAfterDate(dateString) {
+    const datums = [];
     const startDate = new Date(dateString);
     for (let i = 0; i < 7; i++) {
         const pickedDate = new Date(startDate);
-
         pickedDate.setDate(startDate.getDate() + i);
-        const formattedDate = pickedDate.toISOString().split('T')[0];
-        
-
-        datums.push(formattedDate);
+        datums.push(pickedDate.toISOString().split('T')[0]);
     }
-    //console.log(datums);
     return datums; 
 }
 
-function showDetailedAdvice(data,settings,datum){
-    Array.from(mainBody.children).forEach((child) => {
-        if (child.nodeName === "P") {
-            child.remove();
-        }
-    });
+function createChart(datums, scores, data, settings) {
+    const ctx = document.getElementById('myChart');
+    const barChartLegenda = document.querySelector('.chartLegenda');
 
-    tooSnowy(data, datum);
-    tooMuchWind(data, settings, datum);
-    rightTemperature(data, settings, datum);
-    checkPrecipitation(data, settings, datum);
-    checkSoilMoisture(data, settings, datum);
-    rightSoilTemperature(data, settings, datum);
-}
+    if (barChartLegenda) barChartLegenda.style.display = 'block';
+    if (plantenChart) plantenChart.destroy();
 
-
-
-
-function createChart(datums,scores, data, settings){
-  const ctx = document.getElementById('myChart');
-  const barChartLegenda = document.querySelector('.chartLegenda');
-
-  if(barChartLegenda){
-    barChartLegenda.style.display = 'block';
-  }
-  if (plantenChart) {
-    plantenChart.destroy();
-  }
-
-  const barColors = scores.map(score => {
-        if (score == 4) return '#2e7d32'; 
-        if (score == 3) return '#558b2f'; 
-        if (score == 2) return '#ef6c00';
+    const barColors = scores.map(score => {
+        if (score === 4) return '#2e7d32'; 
+        if (score === 3) return '#558b2f'; 
+        if (score === 2) return '#ef6c00';
         return '#c62828';                   
     });
 
-  plantenChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: datums,
-      datasets: [{
-        label: `Planting advice today: ${getStarRating(scores[0])}`,
-        data: scores, 
-        backgroundColor: barColors,
-        borderWidth: 1
-      }]
-    },
-    options: {
-        onClick: (event, activeElements) => {
-        if (activeElements.length > 0) {
-          const clickedIndex = activeElements[0].index;
-          const clickedDate = datums[clickedIndex];
-          
-          
-          showDetailedAdvice(data, settings, clickedDate);
+    plantenChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: datums,
+            datasets: [{
+                label: `Planting advice today: ${getStarRating(scores[0])}`,
+                data: scores, 
+                backgroundColor: barColors,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            onClick: (event, activeElements) => {
+                if (activeElements.length > 0) {
+                    const clickedIndex = activeElements[0].index;
+                    const clickedDate = datums[clickedIndex];
+
+                    const clickedDayResult = checkPlantingConditions(data, clickedDate, settings);
+                    createHourlyChart(clickedDayResult.labels, clickedDayResult.hourlyScores, clickedDate);
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    min: 1,
+                    max: 4,
+                    ticks: { stepSize: 1 }
+                }
+            }
         }
-      },
-      scales: {
-        y: {
-          beginAtZero: true
-        }
-      }
-    }
-  });
-   
+    });
 }
 
+function createHourlyChart(labels, hourlyScores, datum) {
+    const ctx = document.getElementById('hourlyChart');
+    const wrapper = document.querySelector('.hourlyChartWrapper');
+    const title = document.getElementById('hourlyChartTitle');
 
+    if (!ctx) return;
+
+    if (wrapper) wrapper.style.display = 'block';
+
+    if (title) {
+        const dateObj = new Date(datum);
+        const formattedDate = dateObj.toLocaleDateString('en-US', { 
+            weekday: 'long', month: 'long', day: 'numeric' 
+        });
+        title.textContent = `24-Hour Trend (${formattedDate})`;
+    }
+
+    if (hourlyChart) {
+        hourlyChart.destroy();
+    }
+
+    const pointColors = hourlyScores.map(score => {
+        if (score === 4) return '#2e7d32'; 
+        if (score === 3) return '#558b2f'; 
+        if (score === 2) return '#ef6c00'; 
+        return '#c62828';                   
+    });
+
+    hourlyChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels, 
+            datasets: [{
+                label: 'Hourly Planting Advice',
+                data: hourlyScores,
+                borderColor: '#2e7d32',
+                backgroundColor: 'rgba(46, 125, 50, 0.15)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.3,
+                pointRadius: 5,
+                pointHoverRadius: 8,
+                pointBackgroundColor: pointColors,
+                pointBorderColor: pointColors
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const score = context.raw;
+                            const stars = "⭐".repeat(score);
+                            const statusText = {
+                                4: "Perfect",
+                                3: "Good",
+                                2: "Fair",
+                                1: "Poor"
+                            };
+                            return ` Score: ${score}/4 (${stars}) - ${statusText[score] || ''}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    min: 1,
+                    max: 4,
+                    ticks: {
+                        stepSize: 1,
+                        callback: function(value) {
+                            const labels = { 1: '1 (Poor)', 2: '2 (Fair)', 3: '3 (Good)', 4: '4 (Perfect)' };
+                            return labels[value] || value;
+                        }
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Time (Hour)'
+                    }
+                }
+            }
+        }
+    });
+}
