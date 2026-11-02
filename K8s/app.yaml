@@ -15,7 +15,7 @@ spec:
         options:
         - name: single-request-reopen
         - name: ndots
-            value: "2"
+          value: "2"
       containers:
       - name: tropometrics-app
         image: tropometrics:latest
