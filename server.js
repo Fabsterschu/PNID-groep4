@@ -3,7 +3,9 @@ const {createClient } = require('redis');
 const portNr = 3000;
 const app = express();
 const ttl = 60; //time to live van de cache is 60 seconden (1 minuut)
-const redisClient = createClient();
+const redisClient = createClient({
+    url: 'redis://redis-service:6379'
+});
 
 async function initRedis() {
         redisClient.on('error', (err) => console.log('Redis Client Error', err));
