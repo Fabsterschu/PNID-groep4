@@ -57,7 +57,6 @@ formData.addEventListener("submit", async function (event) {
 
     const urlData = new FormData(this);
     const searchParams = new URLSearchParams(urlData);
-
     try {
         const position = await new Promise((resolve, reject) => {
             navigator.geolocation.getCurrentPosition(resolve, reject);
@@ -77,6 +76,7 @@ formData.addEventListener("submit", async function (event) {
     catch (error) {
         console.error("Kon de live locatie niet ophalen.");
         alert("Live locatie kon niet opgevraagd worden, geef je browser toestemming");
+        
     }
 })
 
@@ -103,19 +103,18 @@ async function fetchData(paramString) {
     return {};
 }
 
-// Category checks
 function checkWind(wind, windGusts, settings) {
     const maxWind = settings.maxWind;
     const maxWindGusts = settings.maxWindGusts;
 
     if (wind <= maxWind && windGusts <= maxWindGusts) {
         return { score: 1.0, warning: null };
-    } else if ((wind > maxWind && wind < (maxWind + 3)) && windGusts <= maxWindGusts) {
+    } else if ((wind > maxWind && wind < (maxWind + 2)) && windGusts <= maxWindGusts+4) {
         return { score: 0.5, warning: `Wind speed is slightly high (${wind} km/h)` };
-    } else if ((wind > maxWind && wind < (maxWind + 3)) && ((windGusts > maxWindGusts) && (windGusts < (maxWindGusts + 6)))) {
-        return { score: 0.15, warning: `Wind speed and gusts are high` };
-    } else if ((wind <= maxWind) && (windGusts > maxWindGusts && windGusts < maxWindGusts + 6)) {
-        return { score: 0.5, warning: `Wind gusts are slightly high` };
+    // } else if ((wind > maxWind && wind < (maxWind + 3)) && ((windGusts > maxWindGusts) && (windGusts < (maxWindGusts + 6)))) {
+    //     return { score: 0.15, warning: `Wind speed and gusts are high` };
+    // } else if ((wind <= maxWind) && (windGusts > maxWindGusts && windGusts < maxWindGusts + 6)) {
+    //     return { score: 0.5, warning: `Wind gusts are slightly high` };
     } else {
         return { score: 0.0, warning: `Wind is too strong for planting (${wind} km/h)` };
     }
@@ -125,10 +124,14 @@ function checkTemp(temp, settings) {
     const maxTemp = settings.maxTemp;
     const minTemp = settings.minTemp;
 
+    if(temp <= 0){
+        return {score: 0.0, warning: `Freezing temperature detected`};
+    }
+
     if (temp >= minTemp && temp <= maxTemp) {
         return { score: 1.0, warning: null };
-    } else if ((temp > maxTemp && temp < maxTemp + 3) || (temp < minTemp && temp > minTemp - 3)) {
-        return { score: 0.5, warning: `Suboptimal temperature (${temp}°C), but planting is still possible` };
+    } else if ((temp > maxTemp && temp < maxTemp + 2) || (temp < minTemp && temp > minTemp - 2)) {
+        return { score: 0.5, warning: `Not the best temperature (${temp}°C), but planting is still possible` };
     } else {
         return { score: 0.0, warning: `Unfavorable temperature: ${temp}°C (ideal: ${minTemp}-${maxTemp}°C)` };
     }
@@ -140,12 +143,15 @@ function checkMm(mm, prob, settings) {
 
     if (mm <= maxMm && prob <= maxProbability) {
         return { score: 1.0, warning: null };
-    } else if (mm > maxMm && mm < maxMm + 3 && prob <= maxProbability) {
-        return { score: 0.5, warning: `Light rainfall expected (${mm} mm)` };
-    } else if (mm <= maxMm && prob > maxProbability && prob < maxProbability + 10) {
-        return { score: 0.5, warning: `Moderate precipitation probability (${prob}%)` };
-    } else {
-        return { score: 0.0, warning: `High risk of heavy rainfall (${mm} mm, ${prob}%)` };
+    } 
+    else if (mm > maxMm && mm < maxMm + 1.5 && prob <= maxProbability + 15) {
+        return { score: 0.5, warning: `Risk of light rainfall expected (${mm} mm)` };
+    } 
+    // else if (mm <= maxMm && prob > maxProbability && prob < maxProbability + 10) {
+    //     return { score: 0.5, warning: `Moderate precipitation probability (${prob}%)` };
+    // } 
+    else {
+        return { score: 0.0, warning: `Soil too wet or high precipitation risl (${mm} mm, ${prob}%)` };
     }
 }
 
@@ -155,8 +161,8 @@ function checkSoilMoisture(soilMoist, settings) {
 
     if (soilMoist >= minMoisture1_3cm && soilMoist <= maxMoisture1_3cm) {
         return { score: 1.0, warning: null };
-    } else if ((soilMoist > maxMoisture1_3cm && soilMoist < maxMoisture1_3cm + 0.05) || 
-               (soilMoist < minMoisture1_3cm && soilMoist > minMoisture1_3cm - 0.03)) {
+    } else if ((soilMoist > maxMoisture1_3cm && soilMoist < maxMoisture1_3cm + 0.03) || 
+               (soilMoist < minMoisture1_3cm && soilMoist > minMoisture1_3cm - 0.02)) {
         return { score: 0.5, warning: `Soil moisture (1-3cm) is slightly outside optimal range` };
     } else {
         return { score: 0.0, warning: `Soil moisture (1-3cm) is unsuitable for planting` };
@@ -169,8 +175,8 @@ function checkSoilTemp(soilTemp, settings) {
 
     if (soilTemp >= minSoilTemp && soilTemp <= maxSoilTemp) { 
         return { score: 1.0, warning: null };
-    } else if ((soilTemp > maxSoilTemp && soilTemp < maxSoilTemp + 3) || 
-               (soilTemp < minSoilTemp && soilTemp > minSoilTemp - 2)) {
+    } else if ((soilTemp > maxSoilTemp && soilTemp < maxSoilTemp + 2) || 
+               (soilTemp < minSoilTemp && soilTemp > minSoilTemp - 1.5)) {
         return { score: 0.5, warning: `Soil temperature (${soilTemp}°C) is not ideal, but planting is possible` };
     } else {
         return { score: 0.0, warning: `Soil temperature is not suitable for planting: ${soilTemp}°C` };
@@ -188,6 +194,9 @@ function evaluateHour(uur, settings) {
     const moistScore = checkSoilMoisture(uur.moisture, settings);
     const soilTempScore = checkSoilTemp(uur.soilTemp, settings);
 
+    const scorenList = [windScore.score, tempScore.score, rainScore.score, moistScore.score, soilTempScore.score]; //hief maak ik array met de scores v alle categorien voor filteren
+    const aantalZeroesInList = scorenList.filter(s => s === 0.0).length; //tel aantal 0.0's in die uur. Zodat het niet meer op 3 of 4 kan komen met nulletjes
+
     const totaal = windScore.score + tempScore.score + rainScore.score + moistScore.score + soilTempScore.score;
     const percentage = (totaal / 5.0) * 100;
 
@@ -197,6 +206,13 @@ function evaluateHour(uur, settings) {
     } else if (percentage >= 60) {
         scoreTot = 3;
     } else if (percentage >= 40) {
+        scoreTot = 2;
+    }
+
+    if (aantalZeroesInList >= 2){
+        scoreTot = 1;
+    }
+    else if(aantalZeroesInList === 1 && scoreTot > 2){
         scoreTot = 2;
     }
 
@@ -235,7 +251,7 @@ function getUren(data, datum) {
     });
     return uren;
 }
-
+//returnt een array van scructured obj
 function checkPlantingConditions(data, datum, settings) {
     const uren = getUren(data, datum);
 
