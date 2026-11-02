@@ -28,11 +28,12 @@ kind: Service
 metadata:
   name: tropometrics-service
 spec:
-  type: NodePort
+  type: ClusterIP
+  externalIPs:
+  - 145.52.126.137
   ports:
   - port: 80
     targetPort: 3000
-    nodePort: 30080
   selector:
     app: tropometrics
 ---
