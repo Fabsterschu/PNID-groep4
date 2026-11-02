@@ -308,7 +308,7 @@ async function checkPlanting(paramString) {
     
     const firstDay = weekResults[0];
     //Hoeft misschien niet, maar wijs uurgrafiek van gekozen datum direct
-    createHourlyChart(firstDay.labels, firstDay.hourlyScores, chosenDate);
+    createHourlyChart(firstDay.labels, firstDay.hourlyScores, chosenDate, firstDay.evaluations);
 }
 
 //Returnt een array
