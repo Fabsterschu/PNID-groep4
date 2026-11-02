@@ -83,7 +83,7 @@ produceOptions.forEach((button) => {
         selectedProduce = button.dataset.produce;
     
     produceButton.textContent =  button.textContent.trim();
-    console.log(selectedProduce);
+        console.log(selectedProduce);
     });
 });
 
@@ -284,7 +284,8 @@ function checkPlantingConditions(data, datum, settings) {
         labels: labels, 
         hourlyScores: hourlyScores,
         dailyScore: dailyScore,    
-        warnings: allWarningsForDay
+        warnings: allWarningsForDay,
+        evaluations: evaluations
     };
 }
 
@@ -377,7 +378,8 @@ function createChart(datums, scores, data, settings) {
                     plantenChart.update();
 
                     const clickedDayResult = checkPlantingConditions(data, clickedDate, settings);
-                    createHourlyChart(clickedDayResult.labels, clickedDayResult.hourlyScores, clickedDate);
+                    createHourlyChart(clickedDayResult.labels, clickedDayResult.hourlyScores, clickedDate, clickedDayResult.evaluations);
+                    updateWarningBox(clickedDayResult, clickedDate);
                 }
             },
             scales: {
@@ -395,7 +397,7 @@ function createChart(datums, scores, data, settings) {
 //uurchart functie.
 //Labels: de array met de tijdstippen vd dag zoals 01:00 etc
 //array met berekende score 1-4 p/uur
-function createHourlyChart(labels, hourlyScores, datum) {
+function createHourlyChart(labels, hourlyScores, datum, evaluations) {
     const ctx = document.getElementById('hourlyChart');
     const wrapper = document.querySelector('.hourlyChartWrapper');
     const title = document.getElementById('hourlyChartTitle');
@@ -461,6 +463,13 @@ function createHourlyChart(labels, hourlyScores, datum) {
                                 1: "Poor"
                             };
                             return ` Score: ${score}/4 (${stars}) - ${statusText[score] || ''}`;
+                        },
+                        afterBody: function(context) {
+                            const index = context[0].dataIndex;
+                            if (evaluations[index] && evaluations[index].warnings && evaluations[index].warnings.length > 0) {
+                                return '\nWarnings:\n' + evaluations[index].warnings.map(w => `- ${w}`).join('\n');
+                            }
+                            return '';
                         }
                     }
                 }
@@ -487,4 +496,61 @@ function createHourlyChart(labels, hourlyScores, datum) {
             }
         }
     });
+}
+
+function updateWarningBox(dayResult, datum) {
+    const infoBar = document.getElementById("detailedInfoBar");
+    const warningCard = document.getElementById("warningCard");
+    const warningTitle = document.getElementById("warningTitle");
+    const warningStars = document.getElementById("warningStars");
+    const noWarningsMsg = document.getElementById("noWarningsMessage");
+    const warningList = document.getElementById("warningList");
+
+    if (!infoBar || !warningCard) return;
+
+    const dateObj = new Date(datum);
+    const formattedDate = dateObj.toLocaleDateString('en-US', { 
+        weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' 
+    });
+
+    const warnings = dayResult.warnings;
+    const score = dayResult.dailyScore;
+    const stars = getStarRating(score);
+
+    warningCard.className = "warning-card";
+    let statusTitle = "Poor Planting Conditions";
+    
+    if (score === 4) { 
+        warningCard.classList.add("status-perfect"); 
+        statusTitle = "Perfect Planting Conditions"; 
+    } else if (score === 3) { 
+        warningCard.classList.add("status-good"); 
+        statusTitle = "Good Planting Conditions"; 
+    } else if (score === 2) { 
+        warningCard.classList.add("status-fair"); 
+        statusTitle = "Fair Planting Conditions"; 
+    } else { 
+        warningCard.classList.add("status-poor"); 
+    }
+
+    warningTitle.textContent = `${statusTitle} - ${formattedDate}`;
+    warningStars.textContent = `${stars} (${score}/4)`;
+
+    warningList.innerHTML = "";
+
+    if (warnings.length === 0) {
+        noWarningsMsg.style.display = "block";
+        warningList.style.display = "none";
+    } else {
+        noWarningsMsg.style.display = "none";
+        warningList.style.display = "block";
+
+        warnings.forEach(warningText => {
+            const li = document.createElement("li");
+            li.textContent = `⚠️ ${warningText}`;
+            warningList.appendChild(li);
+        });
+    }
+
+    infoBar.style.display = "block";
 }

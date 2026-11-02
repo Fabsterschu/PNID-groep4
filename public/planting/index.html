@@ -75,14 +75,25 @@
             <br>
             <br>
 
-     
             <div class="hourlyChartWrapper"> 
                 <h3 id="hourlyChartTitle" class="chartTitle">Hourly trend</h3>
                 <canvas id="hourlyChart"></canvas>
             </div>
         </div>
 
-        <div id="detailedInfoBar"></div>
+        <!-- Vaste HTML-structuur voor het waarschuwingsblok -->
+        <div id="detailedInfoBar" style="display: none;">
+            <div id="warningCard" class="warning-card">
+                <div class="warning-header">
+                    <h3 id="warningTitle">Planting Conditions</h3>
+                    <span id="warningStars" class="warning-stars"></span>
+                </div>
+                <p id="noWarningsMessage" class="no-warnings" style="display: none;">
+                    No weather risks detected for this day. Good conditions for planting!
+                </p>
+                <ul id="warningList" class="warning-list"></ul>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
