@@ -14,10 +14,15 @@ spec:
       dnsConfig:
         options:
         - name: single-request-reopen
+        - name: ndots
+            value: "2"
       containers:
       - name: tropometrics-app
         image: tropometrics:latest
         imagePullPolicy: IfNotPresent
+        env:
+          - name: NODE_OPTIONS
+            value: "--dns-result-order=ipv4first"
         ports:
         - containerPort: 3000
         resources:
