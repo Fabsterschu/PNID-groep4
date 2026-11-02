@@ -2,8 +2,6 @@ const mainBody = document.getElementById("mainBody");
 const plantButton = document.getElementById("inputButton");
 const dateInput = document.getElementById("dateInput");
 const formData = document.getElementById("dataForm");
-const scoreboard = document.getElementById("scoreboard");
-const scoreNr = document.getElementById("scoreNr");
 const produceButton = document.getElementById("produceButton");
 const produceOptions = document.querySelectorAll(".produceOptions button");
 
@@ -304,16 +302,15 @@ async function checkPlanting(paramString) {
     const weekResults = weekdatums.map(datum => checkPlantingConditions(data, datum, settings));
     const dailyScores = weekResults.map(res => res.dailyScore);
 
-    if (scoreNr) {
-        scoreNr.textContent = dailyScores[0]; 
-    }
     
     createChart(weekdatums, dailyScores, data, settings);
     
     const firstDay = weekResults[0];
+    //Hoeft misschien niet, maar wijs uurgrafiek van gekozen datum direct
     createHourlyChart(firstDay.labels, firstDay.hourlyScores, chosenDate);
 }
 
+//Returnt een array
 function getAWeekAfterDate(dateString) {
     const datums = [];
     const startDate = new Date(dateString);
@@ -344,17 +341,40 @@ function createChart(datums, scores, data, settings) {
         data: {
             labels: datums,
             datasets: [{
-                label: `Planting advice today: ${getStarRating(scores[0])}`,
+                label: `Planting advice (${datums[0]}): ${getStarRating(scores[0])}`,
                 data: scores, 
                 backgroundColor: barColors,
                 borderWidth: 1
             }]
         },
         options: {
+            responsive: true,
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        
+                        label: function(context) {
+                            const score = context.raw;
+                            const stars = getStarRating(score);
+                            const statusText = {
+                                4: "Perfect",
+                                3: "Good",
+                                2: "Fair",
+                                1: "Poor"
+                            };
+                            return ` Score: ${score}/4 (${stars}) - ${statusText[score] || ''}`;
+                        }
+                    }
+                }
+            },
             onClick: (event, activeElements) => {
                 if (activeElements.length > 0) {
                     const clickedIndex = activeElements[0].index;
                     const clickedDate = datums[clickedIndex];
+                    const clickedScore = scores[clickedIndex];
+
+                    plantenChart.data.datasets[0].label = `Planting advice (${clickedDate}): ${getStarRating(clickedScore)}`;
+                    plantenChart.update();
 
                     const clickedDayResult = checkPlantingConditions(data, clickedDate, settings);
                     createHourlyChart(clickedDayResult.labels, clickedDayResult.hourlyScores, clickedDate);
@@ -372,6 +392,9 @@ function createChart(datums, scores, data, settings) {
     });
 }
 
+//uurchart functie.
+//Labels: de array met de tijdstippen vd dag zoals 01:00 etc
+//array met berekende score 1-4 p/uur
 function createHourlyChart(labels, hourlyScores, datum) {
     const ctx = document.getElementById('hourlyChart');
     const wrapper = document.querySelector('.hourlyChartWrapper');
@@ -379,14 +402,16 @@ function createHourlyChart(labels, hourlyScores, datum) {
 
     if (!ctx) return;
 
-    if (wrapper) wrapper.style.display = 'block';
+    if (wrapper){
+        wrapper.style.display = 'block';
+    } 
 
     if (title) {
         const dateObj = new Date(datum);
         const formattedDate = dateObj.toLocaleDateString('en-US', { 
             weekday: 'long', month: 'long', day: 'numeric' 
         });
-        title.textContent = `24-Hour Trend (${formattedDate})`;
+        title.textContent = `24-Hour graph (${formattedDate})`;
     }
 
     if (hourlyChart) {
@@ -401,7 +426,7 @@ function createHourlyChart(labels, hourlyScores, datum) {
     });
 
     hourlyChart = new Chart(ctx, {
-        type: 'line',
+        type: 'line', //lijngrafiek
         data: {
             labels: labels, 
             datasets: [{
@@ -411,7 +436,7 @@ function createHourlyChart(labels, hourlyScores, datum) {
                 backgroundColor: 'rgba(46, 125, 50, 0.15)',
                 borderWidth: 2,
                 fill: true,
-                tension: 0.3,
+                tension: 0.2,
                 pointRadius: 5,
                 pointHoverRadius: 8,
                 pointBackgroundColor: pointColors,
@@ -443,11 +468,12 @@ function createHourlyChart(labels, hourlyScores, datum) {
             scales: {
                 y: {
                     min: 0,
-                    max: 4,
+                    max: 5,
                     ticks: {
                         stepSize: 1,
                         callback: function(value) {
-                            const labels = { 1: '1 (Poor)', 2: '2 (Fair)', 3: '3 (Good)', 4: '4 (Perfect)' };
+                            const labels = { 1: '1 (Poor)', 2: '2 (Fair)', 3: '3 (Good)', 4: '4 (Perfect)'};
+                            if(value === 5) return ''; //verberg y-as 5. want max cijfer is toch tot 4
                             return labels[value] || value;
                         }
                     }
@@ -455,7 +481,7 @@ function createHourlyChart(labels, hourlyScores, datum) {
                 x: {
                     title: {
                         display: true,
-                        text: 'Time (Hour)'
+                        text: 'Hours of the day'
                     }
                 }
             }
