@@ -11,6 +11,9 @@ spec:
       labels:
         app: tropometrics
     spec:
+      dnsConfig:
+        options:
+        - name: single-request-reopen
       containers:
       - name: tropometrics-app
         image: tropometrics:latest
