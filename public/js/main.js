@@ -363,7 +363,7 @@ function createChart(datums, scores, data, settings) {
             scales: {
                 y: {
                     beginAtZero: true,
-                    min: 1,
+                    min: 0,
                     max: 4,
                     ticks: { stepSize: 1 }
                 }
@@ -442,7 +442,7 @@ function createHourlyChart(labels, hourlyScores, datum) {
             },
             scales: {
                 y: {
-                    min: 1,
+                    min: 0,
                     max: 4,
                     ticks: {
                         stepSize: 1,
