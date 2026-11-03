@@ -12,8 +12,9 @@
      <div class="Wrapper">
         <div id="Title">
             <h1>Weather Predictions</h1>
-            <img src="/images/skyGame.jpg" aalt="skyGame" class="titel-afbeelding">
+            <img src="/images/skyGame.jpg" alt="skyGame" class="titel-afbeelding">
         </div>
+
         <div id="mainBody">
             <nav>
                 <a class="navButton" href="/">Home</a>
@@ -24,36 +25,31 @@
                 <a class="navButton" href="/harvesting">Harvesting</a>
                 <a class="navButton" href="/heat">Heat stress</a>
             </nav>
+
             <form id="dataForm" class="dropDown">
                 <div class="produceDropdown">
                     <button type="button" id="produceButton">Produce ▾</button>
 
-                    <div class= "produceOptions">
-                        <button type="button" data-produce="summerWheat"> Summer Wheat &#127806;  </button>
+                    <div class="produceOptions">
+                        <button type="button" data-produce="summerWheat"> Summer Wheat &#127806; </button>
                         <button type="button" data-produce="silageCorn"> Silage Corn &#127805; </button>
                     </div>
                 </div>
 
                 <input type="date" name="date" id="dateInput">
-                <!input type="text" name="lattitude" value="52.52">
-                <!input type="text" name="longitude" value="13.41">
+                <!-- <input type="text" name="latitude" value="52.52"> -->
+                <!-- <input type="text" name="longitude" value="13.41"> -->
                 <input type="submit" id="inputButton" value="OK">
             </form>
-            <!---
-            <div id="scoreboard">
-                <h3> Advice number: <span id="scoreNr"> </span> </h3>
-            </div>
-            -->
+
             <br>
             <br>
             <br>
-            
+        
             <div class="chartLegenda">
                 <canvas id="myChart"></canvas>
                 
-                
                 <div class="boxLegenda">
-
                     <div class="legendItem">
                         <span id="Schale1" class="color-box"></span>
                         <span>1 = Bad</span>
@@ -73,12 +69,33 @@
                         <span id="Schale4" class="color-box"></span>
                         <span>4 = Perfect</span>
                     </div>
-                
                 </div>
             </div>
-         </div>
+            <br>
+            <br>
+            <br>
 
-         <div id="detailedInfoBar"> </div>
+            <div class="hourlyChartWrapper"> 
+                <h3 id="hourlyChartTitle" class="chartTitle">Hourly trend</h3>
+                <canvas id="hourlyChart"></canvas>
+            </div>
+        </div>
+
+       
+        <div id="detailedInfoBar" style="display: none;">
+            <div id="warningCard" class="warning-card">
+                <div class="warning-header">
+                    <h3 id="warningTitle">Planting Conditions</h3>
+                    <span id="warningStars" class="warning-stars"></span>
+                </div>
+                <p id="noWarningsMessage" class="no-warnings" style="display: none;">
+                    No weather risks detected for this day. Good conditions for planting!
+                </p>
+                <ul id="warningList" class="warning-list"></ul>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="/js/main.js"></script>
 </body>
