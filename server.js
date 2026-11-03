@@ -1,5 +1,6 @@
 const express = require('express');
 const {createClient } = require('redis');
+const calculateData = require("./calculateData");
 const portNr = 3000;
 const app = express();
 const ttl = 60; //time to live van de cache is 60 seconden (1 minuut)
@@ -19,8 +20,9 @@ app.use(express.static('public'));
 app.get('/api/v1/data', async (req, res) => {
     const latitude = req.query.latitude;
     const longitude = req.query.longitude;
+    const produce = req.query.produce;
 
-    const cacheKey = `${latitude}_${longitude}`;
+    const cacheKey = `${latitude}_${longitude}_${produce}`;
 
     const cachedData = await redisClient.get(cacheKey);
 

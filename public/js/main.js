@@ -68,6 +68,7 @@ formData.addEventListener("submit", async function (event) {
         searchParams.delete("date");
         searchParams.append("latitude", latitude);
         searchParams.append("longitude", longitude);
+        searchParams.append("produce", selectedProduce)
 
         const queryString = searchParams.toString();
 
@@ -84,13 +85,8 @@ produceOptions.forEach((button) => {
     selectedProduce = button.dataset.produce;
     
     produceButton.textContent =  button.textContent.trim();
-    console.log(selectedProduce);
     });
 });
-
-function getPosition() {
-
-}
 
 async function fetchData(paramString) {
     try {
