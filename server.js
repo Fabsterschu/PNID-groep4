@@ -49,9 +49,7 @@ app.get('/api/v1/data', async (req, res) => {
 
         const data = await response.json();
         
-        
-
-        await redisClient.setEx(cacheKey, ttl, JSON.stringify(data));
+        await redisClient.setEx(cacheKey, ttl, JSON.stringify(calculateData(data, produce)));
         console.log(`[API FETCH] Data voor ${cacheKey} opgehaald van API`);
 
         res.json(calculateData(data, produce));
