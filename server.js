@@ -9,11 +9,11 @@ const redisClient = createClient({
 });
 
 async function initRedis() {
-        redisClient.on('error', (err) => console.log('Redis Client Error', err));
-        redisClient.connect();
+    redisClient.on('error', (err) => console.log('Redis Client Error', err));
+    redisClient.connect();
 }
 
-initRedis();
+//initRedis();
 
 app.use(express.static('public'));
 
@@ -24,7 +24,7 @@ app.get('/api/v1/data', async (req, res) => {
 
     const cacheKey = `${latitude}_${longitude}_${produce}`;
 
-    const cachedData = await redisClient.get(cacheKey);
+    const cachedData = undefined; //await redisClient.get(cacheKey);
 
     if (cachedData != undefined) {
         console.log(`[CACHE HIT] Data voor ${cacheKey} gevonden!`)
@@ -48,11 +48,13 @@ app.get('/api/v1/data', async (req, res) => {
         }
 
         const data = await response.json();
+        
+        
 
-        await redisClient.setEx(cacheKey, ttl, JSON.stringify(data));
+        //await redisClient.setEx(cacheKey, ttl, JSON.stringify(data));
         console.log(`[API FETCH] Data voor ${cacheKey} opgehaald van API`);
 
-        res.json(data);
+        res.json(calculateData(data, produce));
     }
     catch (error) {
         console.error("Dat ging niet helemaal lekker", error);
