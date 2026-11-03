@@ -1,0 +1,208 @@
+
+body{
+    background:linear-gradient( skyblue, lightgreen);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+#Title {
+    text-align: center;
+    text-shadow: 2px 2px 4px rgb(22, 124, 198);
+}
+
+h1 {
+    /* Weather Predicitions*/
+    color: white;
+    font-weight: lighter;
+    font-family: "Press Start 2P", "limelight";
+}
+
+h2,
+p {
+    /* Welcome... & 🌱*/
+    color: white;
+    font-weight: lighter;
+    font-family: "Press Start 2P", "limelight";
+    text-align: center;
+    text-shadow: 2px 2px 4px rgb(6, 139, 66);
+}
+
+p { font-size:xx-large;}
+
+h3 {
+    /* plan ... insights. */
+    color: rgb(0, 148, 67);
+    font-weight: lighter;
+    font-family: "limelight";
+    text-align: center;
+
+}
+
+.navButton {
+    border-style: inset;
+    border-color: green;
+    border-width: 4px;
+    padding: 5px;
+    background-color: rgb(170, 226, 182);
+    color: green;
+    font-size: large;
+    font-family: "limelight";
+    text-decoration: none;
+    align-content: center;
+}
+
+.navButton[aria-current="page"] {
+    background-color: darkgreen;
+    color: rgb(153, 229, 171);
+}
+
+.navButton:hover {
+    background-color: rgb(100, 188, 100);
+    color: darkgreen;
+}
+
+nav {
+  margin-bottom: 20px;
+}
+
+.Wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.dropDown {
+    display: flex;
+    align-items: center ;
+    justify-content: center;
+    gap: 8px;
+}
+
+.produceDropdown {
+    position: relative;
+}
+
+.produceDropdown button {
+    /*Produce, Wheat en Corn*/
+    background-color: rgb(176, 212, 233);
+    border-width: 4px;
+    border-color: rgb(80, 139, 187);
+    border-style: inset;
+    color: rgb(73, 137, 198);
+    padding: 5px;
+    font-size: large;
+    font-family: "limelight";
+    align-content: center;
+    display: block;
+    cursor: pointer;
+}
+
+.produceDropdown:hover .produceOptions {
+    display: block;
+}
+
+.produceOptions {
+    /*Wheat en Corn*/
+    position: absolute;
+    display: none;
+    box-shadow: 2px 2px 5px rgb(74, 74, 210);
+    z-index: 10;
+}
+.produceOptions button {
+    width: 100%;
+    text-align: left;
+    white-space: nowrap;
+    background-color: rgb(183, 205, 236);
+}
+.produceDropdown button:hover {
+  background-color: rgb(130, 185, 220);
+    color: rgb(60, 118, 199);
+    border-color: rgb(105, 159, 234);
+}
+
+#inputButton,
+#dateInput {
+    border-style: inset;
+    border-color: rgb(80, 139, 187);
+    border-width: 4px;
+    padding: 5px;
+    background-color: rgb(176, 212, 233);
+    color: rgb(73, 137, 198);
+    font-size: large;
+    font-family: "limelight";
+
+}
+
+#inputButton:hover,
+#dateInput:hover {
+    background-color: rgb(130, 185, 220);
+    color: rgb(60, 118, 199);
+    border-color: rgb(105, 159, 234);
+}
+
+.advies {
+    color:green;
+    font-family: "limelight";
+    font-size: medium;
+    font-weight: 400;
+
+}
+
+.titel-afbeelding {
+    display: block;
+    width: 1200px;
+    max-width: 100%;
+    height: 200px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+}
+
+.boxLegenda {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+}
+
+.chartLegenda{
+    display: none;
+    width: 100%;
+    max-width: 800px;
+    margin-top: auto;
+}
+
+.legendItem {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: "limelight", sans-serif;
+    font-size: small;
+    color: darkgreen;
+}
+
+.color-box {
+    width: 18px;
+    height: 18px;
+    display: inline-block;
+    border-radius: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+
+#Schale1 {
+    background-color: #c62828; 
+}
+
+#Schale2 {
+    background-color: #ef6c00; 
+}
+
+#Schale3 {
+    background-color: #558b2f; 
+}
+
+#Schale4 {
+    background-color: #2e7d32; 
+}
