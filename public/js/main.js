@@ -77,7 +77,7 @@ async function checkPlanting(paramString) {
         console.error(`Didn't get any data from weekResults`);
         return;
     }
-    const chosenDate = dateInput.value || new Date().toISOString().split('T')[0];
+    const chosenDate = new Date().toISOString().split('T')[0];
     const weekdatums = getAWeekAfterDate(chosenDate);
     const dailyScores = weekResults.map(res=>res.dailyScore);
 
