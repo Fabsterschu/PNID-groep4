@@ -36,6 +36,7 @@ function checkTemp(temp, settings) {
     }
 }
 
+//Controleert verwachte neerslaghvlheid en neerslagkans
 function checkMm(mm, prob, settings) {
     const maxMm = settings.maxMm;
     const maxProbability = settings.maxProbability;
@@ -82,6 +83,13 @@ function checkSoilTemp(soilTemp, settings) {
     }
 }
 
+/**
+ * Evalueert alle weersfactoren voor 1 specifieke uur en berekent de uurTot score 1-4
+ * Past ook regels toe voor sneeuw en meerdere 0en
+ * @param {Object} uur Object met meetwaarden van 1 uur (temp,wind,gust,prob,moisture,soilTemp, snow)
+ * @param {Object} settings van het gewas 
+ * @returns {{scoreTot: number, warnings: string[]}} Totaalscore (1-4) en een array met alle warnings voor dat uur
+ */
 function evaluateHour(uur, settings) {
     if (uur.snow > 0) {
         return { scoreTot: 1, warnings: [`Snow detected on the ground`] };
@@ -126,6 +134,12 @@ function evaluateHour(uur, settings) {
     return { scoreTot, warnings: hourWarnings };
 }
 
+/**
+ * Filtert raw API-data en isoleert alle uren die bij een specifieke datum horen
+ * @param {Object} data - De complete API-respons met "data.hourly" 
+ * @param {*} datum - Datumtekst in format "YYYY-MM-DD"
+ * @returns {Array<Object>} Array van uurobjecten met formatted waarden en "HH:MM" timeLabels
+ */
 function getUren(data, datum) {
     const uren = [];
     if (!data.hourly || !data.hourly.time) return uren;
@@ -150,8 +164,15 @@ function getUren(data, datum) {
     });
     return uren;
 }
-//returnt een array van scructured obj met de eigenschappen: (labels, hourlyScores, dailyScore, warnings en evaluations) 
-//labels = de timestamps van de dag zoals 02:00
+
+/**
+ * Berekent de volledige dagbeoordeling voor een specifieke datum obv de 24 uurlijkse metingen.
+ *
+ * @param {Object} data - De complete API-respons met uurlijkse weerdata.
+ * @param {string} datum - Datumtekst in formaat 'YYYY-MM-DD'.
+ * @param {Object} settings - Gewasspecifieke instellingen.
+ * @returns {{labels: string[], hourlyScores: number[], dailyScore: number, warnings: string[], evaluations: Array}} Dagresultaat-object voor de frontend.
+ */
 function checkPlantingConditions(data, datum, settings) {
     const uren = getUren(data, datum);
 
@@ -163,6 +184,7 @@ function checkPlantingConditions(data, datum, settings) {
     const labels = uren.map(uur => uur.timeLabel);
     const hourlyScores = evaluations.map(e => e.scoreTot);
 
+    //verzamelt unieke warnings voor de dag
     const allWarningsForDay = [];
     evaluations.forEach(e => {
         if (e.warnings) {
@@ -195,7 +217,12 @@ function getStarRating(score) {
     return "⭐".repeat(score || 1);
 }
 
-//Returnt een array
+/**
+ * Genereert een array van 7 datum strings na vandaag.
+ *
+ * @param {string} dateString - StartdatumString'.
+ * @returns {string[]} Array van 7 ISO datum-strings ['YYYY-MM-DD', ...].
+ */
 function getAWeekAfterDate(dateString) {
     const datums = [];
     const startDate = new Date(dateString);
