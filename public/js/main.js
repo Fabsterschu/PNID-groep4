@@ -85,7 +85,7 @@ async function checkPlanting(paramString) {
     createChart(weekdatums, dailyScores, weekResults);
     
     const firstDay = weekResults[0];
-    //Hoeft misschien niet, maar wijs uurgrafiek van gekozen datum direct
+    //Hoeft misschien niet, maar wijs uurgrafiek van vandaag direct
     createHourlyChart(firstDay.labels, firstDay.hourlyScores, chosenDate, firstDay.evaluations);
 }
 
@@ -158,7 +158,7 @@ function createChart(datums, scores, weekResults) {
                     const clickedDayResult = weekResults[clickedIndex];
                     if(clickedDayResult){
                         createHourlyChart(clickedDayResult.labels, clickedDayResult.hourlyScores, clickedDate, clickedDayResult.evaluations);
-                        //updateWarningBox(clickedDayResult, clickedDate);
+                        updateWarningBox(clickedDayResult, clickedDate);
                     }
                     
                 }
@@ -279,7 +279,7 @@ function createHourlyChart(labels, hourlyScores, datum, evaluations=[]) {
     });
 }
 
-/*
+
 function updateWarningBox(dayResult, datum) {
     const infoBar = document.getElementById("detailedInfoBar");
     const warningCard = document.getElementById("warningCard");
@@ -296,6 +296,7 @@ function updateWarningBox(dayResult, datum) {
     });
 
     const warnings = dayResult.warnings;
+    //const labels = dayResult.labels;
     const score = dayResult.dailyScore;
     const stars = getStarRating(score);
 
@@ -327,13 +328,18 @@ function updateWarningBox(dayResult, datum) {
         noWarningsMsg.style.display = "none";
         warningList.style.display = "block";
 
-        warnings.forEach(warningText => {
-            const li = document.createElement("li");
-            li.textContent = `⚠️ ${warningText}`;
-            warningList.appendChild(li);
-        });
+        dayResult.evaluations.forEach((uur, index)=> {
+            const timestamp = dayResult.labels[index];
+            
+                uur.warnings.forEach(warningText => {
+                const li = document.createElement("li");
+                li.textContent = `⚠️ ${timestamp} ${warningText}`;
+                warningList.appendChild(li);
+            });
+        })
+        
     }
 
     infoBar.style.display = "block";
 }
-    */
+    

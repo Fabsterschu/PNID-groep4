@@ -62,9 +62,9 @@ function checkSoilMoisture(soilMoist, settings) {
         return { score: 1.0, warning: null };
     } else if ((soilMoist > maxMoisture1_3cm && soilMoist < maxMoisture1_3cm + 0.03) || 
                (soilMoist < minMoisture1_3cm && soilMoist > minMoisture1_3cm - 0.02)) {
-        return { score: 0.5, warning: `Soil moisture (1-3cm) is slightly outside optimal range` };
+        return { score: 0.5, warning: `Soil moisture (1-3cm) is slightly outside optimal range: ${soilMoist} m³/m³, ideal range: ${minMoisture1_3cm} - ${maxMoisture1_3cm} m³/m³ ` };
     } else {
-        return { score: 0.0, warning: `Soil moisture (1-3cm) is unsuitable for planting` };
+        return { score: 0.0, warning: `Soil moisture (1-3cm) is unsuitable for planting: ${soilMoist}, ideal range: ${minMoisture1_3cm} - ${maxMoisture1_3cm} m³/m³ ` };
     }
 }
 
@@ -94,7 +94,7 @@ function evaluateHour(uur, settings) {
     const soilTempScore = checkSoilTemp(uur.soilTemp, settings);
 
     const scorenList = [windScore.score, tempScore.score, rainScore.score, moistScore.score, soilTempScore.score]; //hief maak ik array met de scores v alle categorien voor filteren
-    const aantalZeroesInList = scorenList.filter(s => s === 0.0).length; //tel aantal 0.0's in die uur. Zodat het niet meer op 3 of 4 kan komen met nulletjes
+    const aantalZeroesInList = scorenList.filter(s => s === 0.0).length; //tel aantal 0.0's in die uur
 
     const totaal = windScore.score + tempScore.score + rainScore.score + moistScore.score + soilTempScore.score;
     const percentage = (totaal / 5.0) * 100;
@@ -107,7 +107,7 @@ function evaluateHour(uur, settings) {
     } else if (percentage >= 40) {
         scoreTot = 2;
     }
-
+     //Dit gezet zodat wanneer er 0en voorkomen, de score nooit meer dan 2 wordt. Dus MAX 2 if there exists a 0.
     if (aantalZeroesInList >= 2){
         scoreTot = 1;
     }
@@ -150,7 +150,8 @@ function getUren(data, datum) {
     });
     return uren;
 }
-//returnt een array van scructured obj
+//returnt een array van scructured obj met de eigenschappen: (labels, hourlyScores, dailyScore, warnings en evaluations) 
+//labels = de timestamps van de dag zoals 02:00
 function checkPlantingConditions(data, datum, settings) {
     const uren = getUren(data, datum);
 
