@@ -237,8 +237,7 @@ function getAWeekAfterDate(dateString) {
 function generateData(data, produce) {
     const settings = produceSettings[produce];
 
-    const date_time = new Date();
-    const today = date_time.toJSON().split("T")[0];
+    const today = data.hourly.time[0].split("T")[0];
     const weekdatums = getAWeekAfterDate(today);
 
     const weekResults = weekdatums.map(datum => checkPlantingConditions(data, datum, settings));

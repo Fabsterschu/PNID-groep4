@@ -7,13 +7,56 @@ const produceOptions = document.querySelectorAll(".produceOptions button");
 
 let plantenChart = null;
 let hourlyChart = null;
-let selectedProduce = "summerWheat";
 
+window.onload = requestData();
 
-formData.addEventListener("submit", async function (event) {
-    event.preventDefault();
+produceOptions.forEach((button) => {
+    button.addEventListener("click", () => {
+        //selectedProduce = button.dataset.produce;
+        document.cookie = `selectedProduce=${button.dataset.produce}; path=/;`;
+    
+        produceButton.textContent =  button.textContent.trim();
+        requestData();
+    });
+});
 
-    const urlData = new FormData(this);
+function getCookie(cooKey) {
+    let key = cooKey + "=";
+    let decodedCookie = decodeURIComponent(document.cookie);
+    let cookies = decodedCookie.split(";");
+    for (let i = 0; i<cookies.length; i++) {
+        let currentCookie = cookies[i].trim();
+        if (currentCookie.startsWith(key)) {
+            return currentCookie.slice(key.length);
+        }
+    }
+    return undefined;
+}
+
+function getProduceText(selectedProduce) {
+    let textContent;
+    Array.from(produceOptions).forEach((child) => {
+        let childDataset = child.dataset.produce;
+        if (childDataset == selectedProduce) textContent = child.textContent;
+    })
+    return textContent;
+}
+
+async function requestData() {
+    const selectedProduce = getCookie("selectedProduce");
+    if (!selectedProduce) {
+        alert("Please select your desired produce");
+        return;
+    }
+
+    const produceText = getProduceText(selectedProduce);
+    if (!produceText) {
+        console.error(`Produce ${selectedProduce} not found`);
+        alert(`Produce ${selectedProduce} not found`);
+        return;
+    }
+    produceButton.textContent = produceText.trim();
+    const urlData = new FormData(formData);
     const searchParams = new URLSearchParams(urlData);
     try {
         const position = await new Promise((resolve, reject) => {
@@ -34,19 +77,9 @@ formData.addEventListener("submit", async function (event) {
     }
     catch (error) {
         console.error("Kon de live locatie niet ophalen.");
-        alert("Live locatie kon niet opgevraagd worden, geef je browser toestemming");
-        
+        alert("Live locatie kon niet opgevraagd worden, geef je browser toestemming");  
     }
-})
-
-produceOptions.forEach((button) => {
-    button.addEventListener("click", () => {
-        selectedProduce = button.dataset.produce;
-    
-    produceButton.textContent =  button.textContent.trim();
-        console.log(selectedProduce);
-    });
-});
+}
 
 async function fetchData(paramString) {
     try {
@@ -77,13 +110,12 @@ async function checkPlanting(paramString) {
         console.error(`Didn't get any data from weekResults`);
         return;
     }
-    const chosenDate = new Date().toISOString().split('T')[0];
+    const chosenDate = new Date().toLocaleDateString('en-CA');
     const weekdatums = getAWeekAfterDate(chosenDate);
     const dailyScores = weekResults.map(res=>res.dailyScore);
 
     
     createChart(weekdatums, dailyScores, weekResults);
-    
     const firstDay = weekResults[0];
     //Hoeft misschien niet, maar wijs uurgrafiek van vandaag direct
     createHourlyChart(firstDay.labels, firstDay.hourlyScores, chosenDate, firstDay.evaluations);
@@ -342,4 +374,4 @@ function updateWarningBox(dayResult, datum) {
 
     infoBar.style.display = "block";
 }
-    
+
