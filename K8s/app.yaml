@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tropometrics-deployment
+spec:
+  selector:
+    matchLabels:
+      app: tropometrics
+  template:
+    metadata:
+      labels:
+        app: tropometrics
+    spec:
+      dnsConfig:
+        options:
+        - name: single-request-reopen
+        - name: ndots
+          value: "2"
+      containers:
+      - name: tropometrics-app
+        image: tropometrics:latest
+        imagePullPolicy: IfNotPresent
+        env:
+          - name: NODE_OPTIONS
+            value: "--dns-result-order=ipv4first"
+        ports:
+        - containerPort: 3000
+        resources:
+          requests:
+            cpu: "100m"
+          limits:
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tropometrics-service
+spec:
+  type: ClusterIP
+  externalIPs:
+  - 145.52.126.137
+  ports:
+  - port: 80
+    targetPort: 3000
+  selector:
+    app: tropometrics
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: tropometrics-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: tropometrics-deployment
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50
