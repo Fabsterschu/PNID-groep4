@@ -21,6 +21,6 @@
   "homepage": "https://github.com/Fabsterschu/PNID-groep4#readme",
   "dependencies": {
     "express": "^5.3.0",
-    "node-cache": "^5.1.2"
+    "redis": "^6.3.1"
   }
 }

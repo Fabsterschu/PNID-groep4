@@ -9,51 +9,55 @@ let plantenChart = null;
 let hourlyChart = null;
 let selectedProduce = "summerWheat";
 
-const produceSettings = {
-    summerWheat: {
-        maxWind: 10,
-        maxWindGusts: 30,
-        minTemp: 5,
-        maxTemp: 15, 
-        maxMm: 2,
-        maxProbability: 20,
-        minMoisture1_3cm: 0.18,
-        maxMoisture1_3cm: 0.28,
-        
-        minMoisture3_9cm: 0.200,
-        maxMoisture3_9cm: 0.300,
-        
-        minMoisture9_27cm: 0.220,
-        maxMoisture9_27cm: 0.320,
-        
-        minSoilTemp: 5,
-        maxSoilTemp: 15
-    },
-    silageCorn: {
-        maxWind: 20,
-        maxWindGusts: 35,
-        minTemp: 8,
-        maxTemp: 30, 
-        maxMm: 2,
-        maxProbability: 40,
-        minMoisture1_3cm: 0.18,
-        maxMoisture1_3cm: 0.30,
-        
-        minMoisture3_9cm: 0.20,
-        maxMoisture3_9cm: 0.32,
+window.onload = requestData();
+
+produceOptions.forEach((button) => {
+    button.addEventListener("click", () => {
+        //selectedProduce = button.dataset.produce;
+        document.cookie = `selectedProduce=${button.dataset.produce}; path=/;`;
     
-        minMoisture9_27cm: 0.20,
-        maxMoisture9_27cm: 0.32,
-        
-        minSoilTemp: 10,
-        maxSoilTemp: 30
-    }   
-};
+        produceButton.textContent =  button.textContent.trim();
+        requestData();
+    });
+});
 
-formData.addEventListener("submit", async function (event) {
-    event.preventDefault();
+function getCookie(cooKey) {
+    let key = cooKey + "=";
+    let decodedCookie = decodeURIComponent(document.cookie);
+    let cookies = decodedCookie.split(";");
+    for (let i = 0; i<cookies.length; i++) {
+        let currentCookie = cookies[i].trim();
+        if (currentCookie.startsWith(key)) {
+            return currentCookie.slice(key.length);
+        }
+    }
+    return undefined;
+}
 
-    const urlData = new FormData(this);
+function getProduceText(selectedProduce) {
+    let textContent;
+    Array.from(produceOptions).forEach((child) => {
+        let childDataset = child.dataset.produce;
+        if (childDataset == selectedProduce) textContent = child.textContent;
+    })
+    return textContent;
+}
+
+async function requestData() {
+    const selectedProduce = getCookie("selectedProduce");
+    if (!selectedProduce) {
+        alert("Please select your desired produce");
+        return;
+    }
+
+    const produceText = getProduceText(selectedProduce);
+    if (!produceText) {
+        console.error(`Produce ${selectedProduce} not found`);
+        alert(`Produce ${selectedProduce} not found`);
+        return;
+    }
+    produceButton.textContent = produceText.trim();
+    const urlData = new FormData(formData);
     const searchParams = new URLSearchParams(urlData);
     try {
         const position = await new Promise((resolve, reject) => {
@@ -66,6 +70,7 @@ formData.addEventListener("submit", async function (event) {
         searchParams.delete("date");
         searchParams.append("latitude", latitude);
         searchParams.append("longitude", longitude);
+        searchParams.append("produce", selectedProduce);
 
         const queryString = searchParams.toString();
 

@@ -1,24 +1,34 @@
 const express = require('express');
-const nodeCache = require('node-cache');
+const {createClient } = require('redis');
+const calculateData = require("./calculateData");
 const portNr = 3000;
 const app = express();
-const ttl = 60; //time to live van de cache is 1800 seconden (30 minuten)
+const ttl = 60; //time to live van de cache is 60 seconden (1 minuut)
+const redisClient = createClient({
+    url: 'redis://redis-service:6379'
+});
 
-const weatherCache = new nodeCache({stdTTL: ttl});
+async function initRedis() {
+    redisClient.on('error', (err) => console.log('Redis Client Error', err));
+    redisClient.connect();
+}
+
+//initRedis();
 
 app.use(express.static('public'));
 
 app.get('/api/v1/data', async (req, res) => {
     const latitude = req.query.latitude;
     const longitude = req.query.longitude;
+    const produce = req.query.produce;
 
-    const cacheKey = `${latitude}_${longitude}`;
+    const cacheKey = `${latitude}_${longitude}_${produce}`;
 
-    const cachedData = weatherCache.get(cacheKey);
+    const cachedData = undefined //await redisClient.get(cacheKey);
 
     if (cachedData != undefined) {
         console.log(`[CACHE HIT] Data voor ${cacheKey} gevonden!`)
-        return res.json(cachedData);
+        return res.json(JSON.parse(cachedData));
     }
 
 
@@ -38,11 +48,11 @@ app.get('/api/v1/data', async (req, res) => {
         }
 
         const data = await response.json();
-
-        weatherCache.set(cacheKey, data);
+        
+        //await redisClient.setEx(cacheKey, ttl, JSON.stringify(calculateData(data, produce)));
         console.log(`[API FETCH] Data voor ${cacheKey} opgehaald van API`);
 
-        res.json(data);
+        res.json(calculateData(data, produce));
     }
     catch (error) {
         console.error("Dat ging niet helemaal lekker", error);
