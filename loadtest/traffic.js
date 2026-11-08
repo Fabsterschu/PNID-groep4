@@ -24,8 +24,9 @@ export const options = {
 };
 
 export default function () {
-    const response = http.get('http://host.docker.internal:3000/'); 
-    // host.docker.internal = speciale DNS-naam: Docker-containers applicatie op host bereiken.
+const response = http.get(__ENV.TARGET_URL);
+    // __ENV.TARGET_URL > via een omgevingsvariabele bepalen welke website je test.
+    // smoketest = Get-Content -Raw .\loadtest\traffic.js | docker run --rm -i -e TARGET_URL="http://145.52.126.137/" grafana/k6:latest run --once -
 
     check(response, {
         'HTTP status 200': (r) => r.status === 200,     // Check of server antwoordt met HTTP-statuscode 200 (OK)
