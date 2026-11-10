@@ -1,8 +1,23 @@
 apiVersion: v1
-kind: PersistentVolumeClaim
+kind: PersistentVolume
+metadata:
+  name: postgres-pv
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: manual
+  hostPath:
+    path: "/mnt/postgres-data"
+---
+apiVersion: v1
+kind: persistentVolumeClaim
 metadata:
   name: postgres-pvc
 spec:
+  storageClassName: manual
   accessModes:
     - ReadWriteOnce
   resources:

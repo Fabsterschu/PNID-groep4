@@ -112,7 +112,7 @@ app.post("/api/v1/register", async (req, res) => {
         console.log(`[USER REGISTERED] Nieuwe gebruiker: ${username}`)
         res.status(201).json({ success: true, user: result.rows[0] });
     } catch (error) {
-        console.error("DATABASE ERROR]", error);
+        console.error("[DATABASE ERROR]", error);
         if (error.code === "23505") {
             return res.status(409).json({ error: "Gebruikersnaam of e-mail bestaat al"})
         }
