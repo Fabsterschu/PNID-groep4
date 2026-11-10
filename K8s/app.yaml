@@ -23,6 +23,25 @@ spec:
         env:
           - name: NODE_OPTIONS
             value: "--dns-result-order=ipv4first"
+          - name: DB_USER
+            valueFrom:
+              secretKeyRef:
+                name: postgres-secret
+                key: POSTGRES_USER
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: postgres-secret
+                key: POSTGRES_PASSWORD
+          - name: DB_NAME
+            valueFrom:
+              secretKeyRef:
+                name: postgres-secret
+                key: POSTGRES_DB
+          - name: DB_HOST
+            value: "postgres-service"
+          - name: DB_PORT
+            value: "5432"
         ports:
         - containerPort: 3000
         resources:
