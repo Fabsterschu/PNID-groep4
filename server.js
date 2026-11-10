@@ -97,7 +97,7 @@ app.post("/api/v1/register", async (req, res) => {
     const password = req.body.password;
 
     if (!username || !email || !password) {
-        return res.status(400).json({ error: "Vul alle velden in."})
+        return res.status(400).json({ error: "Vul alle velden in."});
     }
 
     try {
@@ -125,6 +125,43 @@ app.post("/api/v1/register", async (req, res) => {
         res.status(500).json({ error: "Interne serverfout."});
     }
     //return res.status(200).json({ sessionID: "sess_" + Math.random().toString(36).substring(2, 15)});
+})
+
+app.post("/api/v1/login", async (req, res) => {
+    const email = req.body.email;
+    const password = req.body.password;
+
+    if (!email || !password) {
+        return res.status(400).json({ error: "Vul e-mailadres èn wachtwoord in." });
+    }
+
+    try {
+        const loginQuery = `SELECT id, username, password_hash FROM users WHERE email = $1`;
+        const result = await pool.query(loginQuery, [email]);
+
+        if (result.rows.length === 0) {
+            return res.status(401).json({ error: "Inloggegevens zijn ongeldig." });
+        }
+
+        const user = result.rows[0];
+
+        const wachtwoordKlopt = await bcrypt.compare(password, user.password_hash);
+
+        if (!wachtwoordKlopt) {
+            return res.status(401).json({ error: "Inloggegevens zijn ongeldig." });
+        }
+
+        const sessionId = "sess_" + crypto.randomBytes(32).toString('hex');
+
+        await redisClient.setEx(`session:${sessionId}`, sessionTtl, user.id.toString());
+
+        console.log(`[LOGIN] Gebruiker ${user.username} ingelogd, sessionID: ${sessionId}`);
+
+        res.json({ success: true, sessionID: sessionId, user: { id: user.id, username: user.username } });
+    } catch (error) {
+        console.log("[LOGIN ERROR]", error);
+        res.status(500).json({ error: "Interne serverfout." });
+    }
 })
 
 app.listen(portNr, () => {

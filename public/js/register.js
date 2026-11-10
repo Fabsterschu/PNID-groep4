@@ -32,7 +32,7 @@ registerForm.addEventListener("submit", async(event) => {
         }
     } catch(error) {
         console.error("Fout tijdens registratie: ", error);
-        errorMessage.textContent = "Kan de server niet bereiken.";
+        errorMessage.textContent = "Couldn't reach the server";
         errorMessage.style.display = "block";
     }
 })
