@@ -48,16 +48,18 @@ app.get('/api/v1/data', async (req, res) => {
 
     const sessionId = req.cookies.sessionID;
     const authHeader = req.headers['authorization']; //gaat eruit zien als "api-key tm_key_9uidsagfu9di989gdsh98kjlk"
+    let apiKey;
 
     if (!authHeader && !sessionId) {
         return res.status(401).json({ error: "Niet geautoriseerd." });
     }
 
-    if (!authHeader.startsWith("Bearer ")) {
-        return res.status(401).json({ error: "Api key is verkeerd geformuleerd" });
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+        apiKey = authHeader.substring(7);
+    } else if (authHeader) {
+        return res.status(401).json({ error: "API key is verkeerd geformuleerd" });
     }
 
-    const apiKey = authHeader.substring(7);
     try {
         if (apiKey) {
             const apiKeyQuery = `SELECT id FROM users WHERE api_key = $1`;
