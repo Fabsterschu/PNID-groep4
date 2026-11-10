@@ -1,6 +1,8 @@
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const {createClient } = require('redis');
+const bcrypt = require('bcrypt');
+const { Pool } = require('pg');
 const calculateData = require("./calculateData");
 const portNr = 3000;
 const app = express();
@@ -18,6 +20,14 @@ async function initRedis() {
 //initRedis();
 app.use(express.json());
 app.use(cookieParser());
+
+const pool = new Pool({
+    user: process.env.DB_USER,
+    host: process.env.DB_HOST,
+    database: process.env.DB_NAME,
+    password: process.env.DB_PASSWORD,
+    port: process.env.DB_PORT
+})
 
 app.use((req, res, next) => {
     if (req.path === "/" || req.path === "/index.html" || req.path === "/planting/" || req.path === "/planting/index.html" || req.path === "/fertilizing/" || req.path === "/fertilizing/index.html" || req.path === "/harvesting/" || req.path === "/harvesting/index.html" || req.path === "/heat/" || req.path === "/heat/index.html" || req.path === "/irrigation/" || req.path === "/irrigation/index.html" || req.path === "/spraying/" || req.path === "/spraying/index.html") {
@@ -80,8 +90,32 @@ app.get('/api/v1/data', async (req, res) => {
 });
 
 app.post("/api/v1/register", async (req, res) => {
-    console.log(req.body.username, req.body.email, req.body.password);
-    return res.status(200).json({ sessionID: "sess_" + Math.random().toString(36).substring(2, 15)});
+    const username = req.body.username;
+    const email = req.body.email;
+    const password = req.body.password;
+
+    if (!username || !email || !password) {
+        return res.status(400).json({ error: "Vul alle velden in."})
+    }
+
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const insertQuery = `
+            INSERT INTO users (username, email, password_hash)
+            VALUES ($1, $2, $3)
+            RETURNING id, username, email
+        `;
+
+        const result = await pool.query(insertQuery, [username, email, hashedPassword])
+    } catch (error) {
+        console.error("DATABASE ERROR]", error);
+        if (error.code === "23505") {
+            return res.status(409).json({ error: "Gebruikersnaam of e-mail bestaat al"})
+        }
+        res.status(500).json({ error: "Interne serverfout."});
+    }
+    //return res.status(200).json({ sessionID: "sess_" + Math.random().toString(36).substring(2, 15)});
 })
 
 app.listen(portNr, () => {
