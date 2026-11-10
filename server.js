@@ -7,6 +7,7 @@ const ttl = 60; //time to live van de cache is 60 seconden (1 minuut)
 const redisClient = createClient({
     url: 'redis://redis-service:6379'
 });
+let environmentVariables = {};
 
 async function initRedis() {
     redisClient.on('error', (err) => console.log('Redis Client Error', err));
@@ -21,6 +22,9 @@ app.get('/api/v1/data', async (req, res) => {
     const latitude = req.query.latitude;
     const longitude = req.query.longitude;
     const produce = req.query.produce;
+    const authHeader = req.headers['authorization'];
+
+    console.log(authHeader);
 
     const cacheKey = `${latitude}_${longitude}_${produce}`;
 

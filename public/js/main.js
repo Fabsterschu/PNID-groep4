@@ -83,7 +83,14 @@ async function requestData() {
 
 async function fetchData(paramString) {
     try {
-        const response = await fetch(`/api/v1/data?${paramString}`);
+        const sessionId = getCookie("sessionID");
+
+        const response = await fetch(`/api/v1/data?${paramString}`, {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${sessionId}`
+            }
+        });
         if (!response.ok) {
             throw new Error('failed to fetch data');
         }
