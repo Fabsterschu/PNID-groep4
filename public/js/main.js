@@ -8,6 +8,8 @@ const produceOptions = document.querySelectorAll(".produceOptions button");
 let plantenChart = null;
 let hourlyChart = null;
 
+
+
 window.onload = requestData();
 
 produceOptions.forEach((button) => {

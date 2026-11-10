@@ -1,4 +1,5 @@
 const express = require('express');
+const cookieParser = require('cookie-parser');
 const {createClient } = require('redis');
 const calculateData = require("./calculateData");
 const portNr = 3000;
@@ -15,6 +16,19 @@ async function initRedis() {
 }
 
 //initRedis();
+app.use(express.json());
+app.use(cookieParser());
+
+app.use((req, res, next) => {
+    if (req.path === "/" || req.path === "/index.html" || req.path === "/planting/" || req.path === "/planting/index.html" || req.path === "/fertilizing/" || req.path === "/fertilizing/index.html" || req.path === "/harvesting/" || req.path === "/harvesting/index.html" || req.path === "/heat/" || req.path === "/heat/index.html" || req.path === "/irrigation/" || req.path === "/irrigation/index.html" || req.path === "/spraying/" || req.path === "/spraying/index.html") {
+        const sessionId = req.cookies.sessionID;
+        if(!sessionId) {
+            console.log("[REDIRECT] Gebruiker is niet ingelogd, doorsturen naar login.");
+            return res.redirect(302, "/login");
+        }
+    }
+    next();
+})
 
 app.use(express.static('public'));
 
@@ -64,6 +78,11 @@ app.get('/api/v1/data', async (req, res) => {
     }
 
 });
+
+app.post("/api/v1/register", async (req, res) => {
+    console.log(req.body.username, req.body.email, req.body.password);
+    return res.status(200).json({ sessionID: "sess_" + Math.random().toString(36).substring(2, 15)});
+})
 
 app.listen(portNr, () => {
     console.log(`== Server online ==\nURL: http://127.0.0.1${portNr == 80 ? '' : `:${portNr}`}\nIP: 127.0.0.1/\nPort: ${portNr}\nAPI: http://127.0.0.1${portNr == 80 ? '' : `:${portNr}`}/api/v1/data`)

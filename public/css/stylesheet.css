@@ -206,3 +206,8 @@ nav {
 #Schale4 {
     background-color: #2e7d32; 
 }
+
+#errorMessage {
+    color: red;
+    display: none;
+}
