@@ -44,12 +44,50 @@ app.use((req, res, next) => {
 app.use(express.static('public'));
 
 app.get('/api/v1/data', async (req, res) => {
+    let isAuthenticated = false;
+
+    const sessionId = req.cookies.sessionID;
+    const authHeader = req.headers['authorization']; //gaat eruit zien als "api-key tm_key_9uidsagfu9di989gdsh98kjlk"
+
+    if (!authHeader && !sessionId) {
+        return res.status(401).json({ error: "Niet geautoriseerd." });
+    }
+
+    if (!authHeader.startsWith("Bearer ")) {
+        return res.status(401).json({ error: "Api key is verkeerd geformuleerd" });
+    }
+
+    const apiKey = authHeader.substring(7);
+    try {
+        if (apiKey) {
+            const apiKeyQuery = `SELECT id FROM users WHERE api_key = $1`;
+
+            const result = await pool.query(apiKeyQuery, [apiKey]);
+
+            if (result.rows.length > 0) {
+                isAuthenticated = true;
+            } else {
+                return res.status(401).json({ error: "API-key is ongeldig" });
+            }
+        } else if (sessionId) {
+            const userId = await redisClient.get(`session:${sessionId}`)
+            if (userId) {
+                isAuthenticated = true
+            }
+        }
+
+        if (!isAuthenticated) {
+            return res.status(401).json({ error: "Niet geautoriseerd." });
+        }
+    } catch (error) {
+        console.error("[AUTHENTICATION ERROR]", error);
+        return res.status(500).json({ error: "Interne serverfout." })
+    }
+    
+
     const latitude = req.query.latitude;
     const longitude = req.query.longitude;
     const produce = req.query.produce;
-    const authHeader = req.headers['authorization'];
-
-    console.log(authHeader);
 
     const cacheKey = `${latitude}_${longitude}_${produce}`;
 
@@ -159,6 +197,45 @@ app.post("/api/v1/login", async (req, res) => {
     } catch (error) {
         console.log("[LOGIN ERROR]", error);
         res.status(500).json({ error: "Interne serverfout." });
+    }
+})
+
+app.post("/api/v1/generate-api-key", async (req, res) => {
+    const sessionId = req.cookies.sessionID;
+
+    if (!sessionId) {
+        return res.status(401).json({ error: "Niet ingelogd." })
+    }
+
+    try {
+        const userId = await redisClient.get(`session:${sessionId}`);
+
+        if (!userId) {
+            return res.status(401).json({ error: "Sessie is ongeldig" })
+        }
+
+        const apiKey = "tm_key_" + crypto.randomBytes(32).toString('hex');
+
+        const updateQuery = `
+            UPDATE users
+            SET api_key $1
+            WHERE id = $2
+            RETURNING api_key
+        `;
+
+        const result = await pool.query(updateQuery, [apiKey, userId]);
+
+        console.log(`[API KEY] nieuwe api key gecreeërd voor userid: ${userId}`)
+
+        res.json({ success: true, api_key: result.rows[0].api_key })
+    } catch (error) {
+        console.error("[API KEY ERROR]", error);
+
+        if (error.code === '23505') {
+            return res.status(500).json({ error: "Sleutel bestaat al, probeer opnieuw" });
+        }
+
+        res.status(500).json({ error: "Interne serverfout"});
     }
 })
 
