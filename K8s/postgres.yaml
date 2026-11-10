@@ -13,7 +13,7 @@ spec:
     path: "/mnt/postgres-data"
 ---
 apiVersion: v1
-kind: persistentVolumeClaim
+kind: PersistentVolumeClaim
 metadata:
   name: postgres-pvc
 spec:
