@@ -75,7 +75,7 @@ spec:
                   key: POSTGRES_DB
           volumeMounts:
             - name: postgres-storage
-              mountPath: /var/lib/postgresql/data
+              mountPath: /var/lib/postgresql
       volumes:
         - name: postgres-storage
           persistentVolumeClaim:
