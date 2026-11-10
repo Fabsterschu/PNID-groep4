@@ -3,10 +3,12 @@ const cookieParser = require('cookie-parser');
 const {createClient } = require('redis');
 const bcrypt = require('bcrypt');
 const { Pool } = require('pg');
+const crypto = require('crypto');
 const calculateData = require("./calculateData");
 const portNr = 3000;
 const app = express();
 const ttl = 60; //time to live van de cache is 60 seconden (1 minuut)
+const sessionTtl = 100000;
 const redisClient = createClient({
     url: 'redis://redis-service:6379'
 });
@@ -108,9 +110,13 @@ app.post("/api/v1/register", async (req, res) => {
         `;
 
         const result = await pool.query(insertQuery, [username, email, hashedPassword])
+        const newUser = result.rows[0];
+        const sessionId = "sess_" + crypto.randomBytes(32).toString('hex');
 
-        console.log(`[USER REGISTERED] Nieuwe gebruiker: ${username}`)
-        res.status(201).json({ success: true, user: result.rows[0] });
+        //await redisClient.setEx(`session:${sessionId}`, sessionTtl, newUser.id.toString());
+
+        console.log(`[USER REGISTERED] Nieuwe gebruiker: ${username}, sessionID: ${sessionId}`)
+        res.status(201).json({ success: true, sessionID: sessionId, user: result.rows[0] });
     } catch (error) {
         console.error("[DATABASE ERROR]", error);
         if (error.code === "23505") {
