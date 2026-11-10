@@ -12,14 +12,13 @@ const sessionTtl = 100000;
 const redisClient = createClient({
     url: 'redis://redis-service:6379'
 });
-let environmentVariables = {};
 
 async function initRedis() {
     redisClient.on('error', (err) => console.log('Redis Client Error', err));
     redisClient.connect();
 }
 
-//initRedis();
+initRedis();
 app.use(express.json());
 app.use(cookieParser());
 
@@ -54,7 +53,7 @@ app.get('/api/v1/data', async (req, res) => {
 
     const cacheKey = `${latitude}_${longitude}_${produce}`;
 
-    const cachedData = undefined //await redisClient.get(cacheKey);
+    const cachedData = await redisClient.get(cacheKey);
 
     if (cachedData != undefined) {
         console.log(`[CACHE HIT] Data voor ${cacheKey} gevonden!`)
@@ -79,7 +78,7 @@ app.get('/api/v1/data', async (req, res) => {
 
         const data = await response.json();
         
-        //await redisClient.setEx(cacheKey, ttl, JSON.stringify(calculateData(data, produce)));
+        await redisClient.setEx(cacheKey, ttl, JSON.stringify(calculateData(data, produce)));
         console.log(`[API FETCH] Data voor ${cacheKey} opgehaald van API`);
 
         res.json(calculateData(data, produce));
@@ -113,7 +112,7 @@ app.post("/api/v1/register", async (req, res) => {
         const newUser = result.rows[0];
         const sessionId = "sess_" + crypto.randomBytes(32).toString('hex');
 
-        //await redisClient.setEx(`session:${sessionId}`, sessionTtl, newUser.id.toString());
+        await redisClient.setEx(`session:${sessionId}`, sessionTtl, newUser.id.toString());
 
         console.log(`[USER REGISTERED] Nieuwe gebruiker: ${username}, sessionID: ${sessionId}`)
         res.status(201).json({ success: true, sessionID: sessionId, user: result.rows[0] });
@@ -124,7 +123,6 @@ app.post("/api/v1/register", async (req, res) => {
         }
         res.status(500).json({ error: "Interne serverfout."});
     }
-    //return res.status(200).json({ sessionID: "sess_" + Math.random().toString(36).substring(2, 15)});
 })
 
 app.post("/api/v1/login", async (req, res) => {
