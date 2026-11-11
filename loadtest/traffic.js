@@ -10,14 +10,11 @@ export const options = {
             startRate: 1,
             timeUnit: '1s',
 
-            preAllocatedVUs: 5, // reserveert vooraf vijf virtuele gebruikers
-            maxVUs: 20, // VUs = Virtual User
+            preAllocatedVUs: 1000, // reserveert vooraf vijf virtuele gebruikers
+            maxVUs: 2000, // VUs = Virtual User
 
             stages: [
-                { duration: '20s', target: 1 },
-                { duration: '30s', target: 5 },
-                { duration: '30s', target: 10 },
-                { duration: '20s', target: 0 },
+                { duration: '120s', target: 2000 }
             ],
         },
     },
