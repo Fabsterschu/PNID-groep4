@@ -32,9 +32,9 @@ function checkWind(wind, windGusts, settings) {
     if (wind <= maxWind && windGusts <= maxWindGusts) {
         return { score: 1.0, warning: null };
     } else if ((wind > maxWind && wind < (maxWind + 2)) && windGusts <= maxWindGusts + 4) {
-        return { score: 0.5, warning: { code: 11, val: wind } };
+        return { score: 0.5, warning: {category:`wind`, code: 11, val: wind } };
     } else {
-        return { score: 0.0, warning: { code: 10, val: wind } };
+        return { score: 0.0, warning: { category:`wind`,code: 10, val: wind } };
     }
 }
 
@@ -49,9 +49,9 @@ function checkTemp(temp, settings) {
     if (temp >= minTemp && temp <= maxTemp) {
         return { score: 1.0, warning: null };
     } else if ((temp > maxTemp && temp < maxTemp + 2) || (temp < minTemp && temp > minTemp - 2)) {
-        return { score: 0.5, warning: { code: 22, val: temp } };
+        return { score: 0.5, warning: {category:`temperature`, code: 22, val: temp } };
     } else {
-        return { score: 0.0, warning: { code: 21, val: temp } };
+        return { score: 0.0, warning: { category: `temperature`,code: 21, val: temp } };
     }
 }
 
@@ -62,9 +62,9 @@ function checkMm(mm, prob, settings) {
     if (mm <= maxMm && prob <= maxProbability) {
         return { score: 1.0, warning: null };
     } else if (mm > maxMm && mm < maxMm + 1.5 && prob <= maxProbability + 15) {
-        return { score: 0.5, warning: { code: 31, val: mm } };
+        return { score: 0.5, warning: {category:`neerslag`, code: 31, val: mm } };
     } else {
-        return { score: 0.0, warning: { code: 30, val: mm, prob: prob } };
+        return { score: 0.0, warning: {category:`neerslag & probability` ,code: 30, val: mm, prob: prob } };
     }
 }
 
@@ -76,9 +76,9 @@ function checkSoilMoisture(soilMoist, settings) {
         return { score: 1.0, warning: null };
     } else if ((soilMoist > maxMoisture1_3cm && soilMoist < maxMoisture1_3cm + 0.03) || 
                (soilMoist < minMoisture1_3cm && soilMoist > minMoisture1_3cm - 0.02)) {
-        return { score: 0.5, warning: { code: 41, val: soilMoist } };
+        return { score: 0.5, warning: { category:`soil moisture`,code: 41, val: soilMoist } };
     } else {
-        return { score: 0.0, warning: { code: 40, val: soilMoist } };
+        return { score: 0.0, warning: {category:`soil moisture`, code: 40, val: soilMoist } };
     }
 }
 
@@ -90,9 +90,9 @@ function checkSoilTemp(soilTemp, settings) {
         return { score: 1.0, warning: null };
     } else if ((soilTemp > maxSoilTemp && soilTemp < maxSoilTemp + 2) || 
                (soilTemp < minSoilTemp && soilTemp > minSoilTemp - 1.5)) {
-        return { score: 0.5, warning: { code: 51, val: soilTemp } };
+        return { score: 0.5, warning: {category:`soil temperature`, code: 51, val: soilTemp } };
     } else {
-        return { score: 0.0, warning: { code: 50, val: soilTemp } };
+        return { score: 0.0, warning: {category:`soil temperature`, code: 50, val: soilTemp } };
     }
 }
 

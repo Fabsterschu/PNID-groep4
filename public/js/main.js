@@ -380,9 +380,9 @@ function updateWarningBox(dayResult, datum) {
         dayResult.evaluations.forEach((uur, index)=> {
             const timestamp = dayResult.labels[index];
             
-                uur.warnings.forEach(warningText => {
+                uur.warnings.forEach(warningObj => {
                 const li = document.createElement("li");
-                li.textContent = `⚠️ ${timestamp} ${warningText}`;
+                li.textContent = `⚠️ ${timestamp} ${warningObj}`;
                 warningList.appendChild(li);
             });
         })
