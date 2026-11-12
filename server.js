@@ -62,6 +62,9 @@ app.get('/api/v1/data', async (req, res) => {
 
     try {
         if (apiKey) {
+            console.log(apiKey);
+            apiKey = apiKey.trim();
+            console.log(apiKey);
             const apiKeyQuery = `SELECT id FROM users WHERE api_key = $1`;
 
             const result = await pool.query(apiKeyQuery, [apiKey]);
