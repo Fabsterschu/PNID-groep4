@@ -220,7 +220,7 @@ app.post("/api/v1/generate-api-key", async (req, res) => {
 
         const updateQuery = `
             UPDATE users
-            SET api_key $1
+            SET api_key = $1
             WHERE id = $2
             RETURNING api_key
         `;
