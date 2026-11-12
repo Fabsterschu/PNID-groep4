@@ -7,8 +7,7 @@ const produceOptions = document.querySelectorAll(".produceOptions button");
 
 let plantenChart = null;
 let hourlyChart = null;
-
-
+let warningDefinitions = {};
 
 window.onload = requestData();
 
@@ -42,6 +41,20 @@ function getProduceText(selectedProduce) {
         if (childDataset == selectedProduce) textContent = child.textContent;
     })
     return textContent;
+}
+
+/**
+ * Zoekt de teksttemplate bij de warning-code in `warningDefinitions`
+ * en vult variabelen zoals {val}, {min}, {max} en {prob} in.
+ */
+function formatWarning(warningObj) {
+    if (!warningObj) return "";
+    const template = warningDefinitions[warningObj.code];
+    if (!template) return `Warning code ${warningObj.code}`;
+
+    return template.replace(/\{(\w+)\}/g, (match, key) => {
+        return warningObj[key] !== undefined ? warningObj[key] : match;
+    });
 }
 
 async function requestData() {
@@ -105,12 +118,11 @@ function getStarRating(score) {
 }
 
 async function checkPlanting(paramString) {
-    // const settings = produceSettings[selectedProduce] || produceSettings.summerWheat;
-    // const data = await fetchData(paramString);
+    const apiResponse = await fetchData(paramString);
+    warningDefinitions = apiResponse.warningDefinitions || {};
+    const weekResults = apiResponse.forecast || [];
 
-    const weekResults = await fetchData(paramString); //await wacht tot het is afgelopen (note for zelf)
-
-    if(weekResults.length === 0){
+    if (weekResults.length === 0) {
         console.error(`Didn't get any data from weekResults`);
         return;
     }
@@ -118,11 +130,12 @@ async function checkPlanting(paramString) {
     const weekdatums = getAWeekAfterDate(chosenDate);
     const dailyScores = weekResults.map(res=>res.dailyScore);
 
-    
+
     createChart(weekdatums, dailyScores, weekResults);
     const firstDay = weekResults[0];
     //Hoeft misschien niet, maar wijs uurgrafiek van vandaag direct
     createHourlyChart(firstDay.labels, firstDay.hourlyScores, chosenDate, firstDay.evaluations);
+    updateWarningBox(firstDay, chosenDate);
 }
 
 //Returnt een array
@@ -284,7 +297,7 @@ function createHourlyChart(labels, hourlyScores, datum, evaluations=[]) {
                         afterBody: function(context) {
                             const index = context[0].dataIndex;
                             if (evaluations[index] && evaluations[index].warnings && evaluations[index].warnings.length > 0) {
-                                return '\nWarnings:\n' + evaluations[index].warnings.map(w => `- ${w}`).join('\n');
+                                return '\nWarnings:\n' + evaluations[index].warnings.map(w => `- ${formatWarning(w)}`).join('\n');
                             }
                             return '';
                         }

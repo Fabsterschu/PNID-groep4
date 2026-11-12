@@ -1,6 +1,29 @@
 const produceSettings = require("./produceSettings");
 
-let selectedProduce = "summerWheat";
+/**
+ * Bouwt de definition table op met de ideale drempelwaarden van het gekozen gewas.
+ *
+ * @param {Object} settings - De instellingen van het gewas.
+ * @returns {Object} Tabel met warning-codes en bijbehorende teksttemplates.
+ */
+function lookupWarningTable(settings) {
+    const WARNING_DEFINITIONS = {
+        1:  "Snow detected on the ground",
+        10: `Wind is too strong for planting ({val} km/h, max ideal: ${settings.maxWind} km/h)`,
+        11: `Wind speed is slightly high ({val} km/h, max ideal: ${settings.maxWind} km/h)`,
+        20: "Freezing temperature detected ({val}°C)",
+        21: `Unfavorable temperature: {val}°C (ideal: ${settings.minTemp}-${settings.maxTemp}°C)`,
+        22: `Not the best temperature ({val}°C), but planting is still possible (ideal: ${settings.minTemp}-${settings.maxTemp}°C)`,
+        30: `Soil too wet or high precipitation risk ({val} mm, {prob}%, max ideal: ${settings.maxMm} mm / ${settings.maxProbability}%)`,
+        31: `Risk of light rainfall expected ({val} mm, max ideal: ${settings.maxMm} mm)`,
+        40: `Soil moisture (1-3cm) is unsuitable for planting: {val} m³/m³ (ideal: ${settings.minMoisture1_3cm}-${settings.maxMoisture1_3cm} m³/m³)`,
+        41: `Soil moisture (1-3cm) is slightly outside optimal range: {val} m³/m³ (ideal: ${settings.minMoisture1_3cm}-${settings.maxMoisture1_3cm} m³/m³)`,
+        50: `Soil temperature is not suitable for planting: {val}°C (ideal: ${settings.minSoilTemp}-${settings.maxSoilTemp}°C)`,
+        51: `Soil temperature ({val}°C) is not ideal, but planting is possible (ideal: ${settings.minSoilTemp}-${settings.maxSoilTemp}°C)`
+    };
+
+    return WARNING_DEFINITIONS;
+}
 
 function checkWind(wind, windGusts, settings) {
     const maxWind = settings.maxWind;
@@ -8,14 +31,10 @@ function checkWind(wind, windGusts, settings) {
 
     if (wind <= maxWind && windGusts <= maxWindGusts) {
         return { score: 1.0, warning: null };
-    } else if ((wind > maxWind && wind < (maxWind + 2)) && windGusts <= maxWindGusts+4) {
-        return { score: 0.5, warning: `Wind speed is slightly high (${wind} km/h)` };
-    // } else if ((wind > maxWind && wind < (maxWind + 3)) && ((windGusts > maxWindGusts) && (windGusts < (maxWindGusts + 6)))) {
-    //     return { score: 0.15, warning: `Wind speed and gusts are high` };
-    // } else if ((wind <= maxWind) && (windGusts > maxWindGusts && windGusts < maxWindGusts + 6)) {
-    //     return { score: 0.5, warning: `Wind gusts are slightly high` };
+    } else if ((wind > maxWind && wind < (maxWind + 2)) && windGusts <= maxWindGusts + 4) {
+        return { score: 0.5, warning: { code: 11, val: wind } };
     } else {
-        return { score: 0.0, warning: `Wind is too strong for planting (${wind} km/h)` };
+        return { score: 0.0, warning: { code: 10, val: wind } };
     }
 }
 
@@ -23,35 +42,29 @@ function checkTemp(temp, settings) {
     const maxTemp = settings.maxTemp;
     const minTemp = settings.minTemp;
 
-    if(temp <= 0){
-        return {score: 0.0, warning: `Freezing temperature detected`};
+    if (temp <= 0) {
+        return { score: 0.0, warning: { code: 20, val: temp } };
     }
 
     if (temp >= minTemp && temp <= maxTemp) {
         return { score: 1.0, warning: null };
     } else if ((temp > maxTemp && temp < maxTemp + 2) || (temp < minTemp && temp > minTemp - 2)) {
-        return { score: 0.5, warning: `Not the best temperature (${temp}°C), but planting is still possible` };
+        return { score: 0.5, warning: { code: 22, val: temp } };
     } else {
-        return { score: 0.0, warning: `Unfavorable temperature: ${temp}°C (ideal: ${minTemp}-${maxTemp}°C)` };
+        return { score: 0.0, warning: { code: 21, val: temp } };
     }
 }
 
-//Controleert verwachte neerslaghvlheid en neerslagkans
 function checkMm(mm, prob, settings) {
     const maxMm = settings.maxMm;
     const maxProbability = settings.maxProbability;
 
     if (mm <= maxMm && prob <= maxProbability) {
         return { score: 1.0, warning: null };
-    } 
-    else if (mm > maxMm && mm < maxMm + 1.5 && prob <= maxProbability + 15) {
-        return { score: 0.5, warning: `Risk of light rainfall expected (${mm} mm)` };
-    } 
-    // else if (mm <= maxMm && prob > maxProbability && prob < maxProbability + 10) {
-    //     return { score: 0.5, warning: `Moderate precipitation probability (${prob}%)` };
-    // } 
-    else {
-        return { score: 0.0, warning: `Soil too wet or high precipitation risl (${mm} mm, ${prob}%)` };
+    } else if (mm > maxMm && mm < maxMm + 1.5 && prob <= maxProbability + 15) {
+        return { score: 0.5, warning: { code: 31, val: mm } };
+    } else {
+        return { score: 0.0, warning: { code: 30, val: mm, prob: prob } };
     }
 }
 
@@ -63,9 +76,9 @@ function checkSoilMoisture(soilMoist, settings) {
         return { score: 1.0, warning: null };
     } else if ((soilMoist > maxMoisture1_3cm && soilMoist < maxMoisture1_3cm + 0.03) || 
                (soilMoist < minMoisture1_3cm && soilMoist > minMoisture1_3cm - 0.02)) {
-        return { score: 0.5, warning: `Soil moisture (1-3cm) is slightly outside optimal range: ${soilMoist} m³/m³, ideal range: ${minMoisture1_3cm} - ${maxMoisture1_3cm} m³/m³ ` };
+        return { score: 0.5, warning: { code: 41, val: soilMoist } };
     } else {
-        return { score: 0.0, warning: `Soil moisture (1-3cm) is unsuitable for planting: ${soilMoist}, ideal range: ${minMoisture1_3cm} - ${maxMoisture1_3cm} m³/m³ ` };
+        return { score: 0.0, warning: { code: 40, val: soilMoist } };
     }
 }
 
@@ -77,22 +90,15 @@ function checkSoilTemp(soilTemp, settings) {
         return { score: 1.0, warning: null };
     } else if ((soilTemp > maxSoilTemp && soilTemp < maxSoilTemp + 2) || 
                (soilTemp < minSoilTemp && soilTemp > minSoilTemp - 1.5)) {
-        return { score: 0.5, warning: `Soil temperature (${soilTemp}°C) is not ideal, but planting is possible` };
+        return { score: 0.5, warning: { code: 51, val: soilTemp } };
     } else {
-        return { score: 0.0, warning: `Soil temperature is not suitable for planting: ${soilTemp}°C` };
+        return { score: 0.0, warning: { code: 50, val: soilTemp } };
     }
 }
 
-/**
- * Evalueert alle weersfactoren voor 1 specifieke uur en berekent de uurTot score 1-4
- * Past ook regels toe voor sneeuw en meerdere 0en
- * @param {Object} uur Object met meetwaarden van 1 uur (temp,wind,gust,prob,moisture,soilTemp, snow)
- * @param {Object} settings van het gewas 
- * @returns {{scoreTot: number, warnings: string[]}} Totaalscore (1-4) en een array met alle warnings voor dat uur
- */
 function evaluateHour(uur, settings) {
     if (uur.snow > 0) {
-        return { scoreTot: 1, warnings: [`Snow detected on the ground`] };
+        return { scoreTot: 1, warnings: [{ code: 1 }] };
     }
 
     const windScore = checkWind(uur.wind, uur.gusts, settings);
@@ -177,19 +183,19 @@ function checkPlantingConditions(data, datum, settings) {
     const uren = getUren(data, datum);
 
     if (uren.length === 0) {
-        return { labels: [], hourlyScores: [], dailyScore: 1, warnings: [] };
+        return { labels: [], hourlyScores: [], dailyScore: 1, warnings: [] , evaluations: []};
     }
 
     const evaluations = uren.map(uur => evaluateHour(uur, settings));
     const labels = uren.map(uur => uur.timeLabel);
     const hourlyScores = evaluations.map(e => e.scoreTot);
 
-    //verzamelt unieke warnings voor de dag
     const allWarningsForDay = [];
     evaluations.forEach(e => {
         if (e.warnings) {
             e.warnings.forEach(w => {
-                if (!allWarningsForDay.includes(w)) {
+                const exists = allWarningsForDay.some(item => item.code === w.code && item.val === w.val);
+                if (!exists) {
                     allWarningsForDay.push(w);
                 }
             });
@@ -213,9 +219,6 @@ function checkPlantingConditions(data, datum, settings) {
     };
 }
 
-function getStarRating(score) {
-    return "⭐".repeat(score || 1);
-}
 
 /**
  * Genereert een array van 7 datum strings na vandaag.
@@ -241,9 +244,11 @@ function generateData(data, produce) {
     const weekdatums = getAWeekAfterDate(today);
 
     const weekResults = weekdatums.map(datum => checkPlantingConditions(data, datum, settings));
-    const dailyScores = weekResults.map(res => res.dailyScore);
 
-    return weekResults;
+    return {
+        warningDefinitions: lookupWarningTable(settings),
+        forecast: weekResults
+    };
 }
 
 module.exports = generateData;
