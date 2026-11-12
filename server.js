@@ -47,7 +47,7 @@ app.get('/api/v1/data', async (req, res) => {
     let isAuthenticated = false;
 
     const sessionId = req.cookies.sessionID;
-    const apiKey = req.headers['api-key']; //gaat eruit zien als "api-key tm_key_9uidsagfu9di989gdsh98kjlk"
+    const apiKey = req.headers['api-key'];
 
     if (!apiKey && !sessionId) {
         return res.status(401).json({ error: "Niet geautoriseerd." });
@@ -61,7 +61,6 @@ app.get('/api/v1/data', async (req, res) => {
 
     try {
         if (apiKey) {
-            apiKey = apiKey.trim();
             const apiKeyQuery = `SELECT id FROM users WHERE api_key = $1`;
 
             const result = await pool.query(apiKeyQuery, [apiKey]);
