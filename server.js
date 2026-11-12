@@ -62,6 +62,21 @@ app.get('/api/v1/data', async (req, res) => {
 
     try {
         if (apiKey) {
+            console.log("Lengte: ", apiKey.length);
+            apiKey = apiKey.trim();
+            console.log("Trim Lengte: ")
+
+            const dbCheck = await pool.query('SELECT id, api_key, LENGTH(api_key) as db_len FROM users');
+            console.log("data in database: ", dbCheck.rows);
+
+            if (dbCheck.rows.length > 0) {
+                for (let i = 0; i<dbCheck.rows.length; i++) {
+                    console.log("apiKey = apikey: ", dbCheck.rows[i].api_key === apiKey);
+                }
+            }
+
+
+            
             console.log(apiKey);
             apiKey = apiKey.trim();
             console.log(apiKey);
@@ -84,6 +99,7 @@ app.get('/api/v1/data', async (req, res) => {
         if (!isAuthenticated) {
             return res.status(401).json({ error: "Niet geautoriseerd." });
         }
+            
     } catch (error) {
         console.error("[AUTHENTICATION ERROR]", error);
         return res.status(500).json({ error: "Interne serverfout." })
