@@ -62,24 +62,7 @@ app.get('/api/v1/data', async (req, res) => {
 
     try {
         if (apiKey) {
-            console.log("Lengte: ", apiKey.length);
             apiKey = apiKey.trim();
-            console.log("Trim Lengte: ")
-
-            const dbCheck = await pool.query('SELECT id, api_key, LENGTH(api_key) as db_len FROM users');
-            console.log("data in database: ", dbCheck.rows);
-
-            if (dbCheck.rows.length > 0) {
-                for (let i = 0; i<dbCheck.rows.length; i++) {
-                    console.log("apiKey = apikey: ", dbCheck.rows[i].api_key === apiKey);
-                }
-            }
-
-
-            
-            console.log(apiKey);
-            apiKey = apiKey.trim();
-            console.log(apiKey);
             const apiKeyQuery = `SELECT id FROM users WHERE api_key = $1`;
 
             const result = await pool.query(apiKeyQuery, [apiKey]);
@@ -248,7 +231,7 @@ app.post("/api/v1/generate-api-key", async (req, res) => {
 
         console.log(`[API KEY] nieuwe api key gecreeërd voor userid: ${userId}`)
 
-        res.json({ success: true, api_key: result.rows[0].api_key })
+        res.status(201).json({ success: true, api_key: result.rows[0].api_key })
     } catch (error) {
         console.error("[API KEY ERROR]", error);
 
