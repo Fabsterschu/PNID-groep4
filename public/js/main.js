@@ -382,7 +382,7 @@ function updateWarningBox(dayResult, datum) {
             
                 uur.warnings.forEach(warningObj => {
                 const li = document.createElement("li");
-                li.textContent = `⚠️ ${timestamp} ${warningObj}`;
+                li.textContent = `⚠️ ${timestamp} ${formatWarning(warningObj)}`;
                 warningList.appendChild(li);
             });
         })
