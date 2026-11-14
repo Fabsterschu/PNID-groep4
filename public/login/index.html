@@ -17,12 +17,17 @@
             <h1>TropoMetrics</h1>
             <img src="/images/skyGame.jpg" aalt="skyGame" class="titel-afbeelding">
         </div>
+        <div class="loginHeader">
+    <div class="farmer">👨‍🌾</div>
+    <h2>Welcome back, Farmer!</h2>
+      <p>Log in to plan your next fieldwork.</p>
+</div> 
             <form id="loginForm">
-                <input type="email" id="emailInput" placeholder="Email">
-                <input type="password" id="passwordInput" placeholder="Password">
-                <input type="submit">
+                <input type="email" id="emailInput" placeholder="Enter your email" required>
+                <input type="password" id="passwordInput" placeholder="Enter your password" required>
+                <button type="submit" id="loginButton">Login</button> 
             </form>
-            <a href="/register/">register</a>
+            <a id="registerHere" href="/register/">Don't have an account? Register here</a>
             <p id="errorMessage"></p>
         </div>
     </div>
