@@ -31,15 +31,33 @@ const pool = new Pool({
 })
 
 app.use(async (req, res, next) => {
-    if (req.path === "/" || req.path === "/index.html" || req.path === "/planting/" || req.path === "/planting/index.html" || req.path === "/fertilizing/" || req.path === "/fertilizing/index.html" || req.path === "/harvesting/" || req.path === "/harvesting/index.html" || req.path === "/heat/" || req.path === "/heat/index.html" || req.path === "/irrigation/" || req.path === "/irrigation/index.html" || req.path === "/spraying/" || req.path === "/spraying/index.html") {
+    const endPoints = ["/", "/index.html",
+        "/planting/", "/planting/index.html",
+        "/fertilizing/", "/fertilizing/index.html",
+        "/harvesting/", "/harvesting/index.html",
+        "/heat/", "/heat/index.html",
+        "/irrigation/", "/irrigation/index.html",
+        "/spraying/", "/spraying/index.html"
+    ];
+    if (endPoints.includes(req.path)) {
         const sessionId = req.cookies.sessionID;
+
         if (!sessionId) {
             console.log("[REDIRECT] Gebruiker is niet ingelogd, doorsturen naar login.");
             return res.redirect(302, "/login");
         }
-        const userId = await redisClient.get(`session:${sessionId}`);
-        if (!userId) {
-            console.log("[REDIRECT] Session expired, doorsturen naar login.");
+        
+        try {
+            const userId = await redisClient.get(`session:${sessionId}`);
+
+            if (!userId) {
+                console.log("[REDIRECT] Session expired, doorsturen naar login.");
+                return res.redirect(302, "/login");
+            }
+
+            await redisClient.expire(`session:${sessionId}`, sessionTtl);
+        } catch (error) {
+            console.log("[REDIS ERROR] kon sessie niet ophalen.", error);
             return res.redirect(302, "/login");
         }
     }
@@ -76,9 +94,9 @@ app.get('/api/v1/data', async (req, res) => {
                 return res.status(401).json({ error: "API-key is ongeldig" });
             }
         } else if (sessionId) {
-            const userId = await redisClient.get(`session:${sessionId}`)
+            const userId = await redisClient.get(`session:${sessionId}`);
             if (userId) {
-                isAuthenticated = true
+                isAuthenticated = true;
             } else {
                 res.status(401).json({ error: "Session id is ongeldig."});
             }
