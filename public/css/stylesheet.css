@@ -207,7 +207,99 @@ nav {
     background-color: #2e7d32; 
 }
 
+//removed error message replaced with html required notification
 #errorMessage {
     color: red;
     display: none;
+}
+
+
+#loginForm, #registerForm {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 320px;
+    margin: 25px auto;
+}
+
+
+#loginForm input, #registerForm input {
+    padding: 12px 15px;
+    border: 2px solid #008b55;
+    border-radius: 8px;
+    background-color: #f5fff9;
+    font-size: 15px;
+    outline: none;
+    font-size: medium;
+}
+
+#loginForm input:focus, #registerForm input:focus {
+    border-color: #00c853;
+    box-shadow: 0 0 8px rgba(0, 200, 83, 0.3);
+}
+
+#loginButton, #registerButton {
+    padding: 12px;
+    background-color: #008b55;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    border-style:solid;
+    border-color: green;
+    border-width: 4px;
+    text-decoration: none;
+    align-content: center;
+}
+
+#loginButton:hover {
+    background-color: #006b40;
+}
+
+#registerHere, #loginHere {
+    text-decoration: none;
+    align-content: center;
+    font-size: large;
+    font-weight: bold;
+    cursor: pointer;
+    font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    color: #119205;
+    text-decoration: none;
+}
+
+.loginHeader {
+    text-align: center;
+}
+
+.loginHeader h2 {
+    color: darkgreen;
+    font-size: 24px;
+    font-weight:300;
+    text-shadow:#00c853
+}
+
+.loginHeader p {
+    color: #119205;
+    font-size: large;
+    font-weight:bold;
+    text-shadow: none;
+    font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    margin-bottom: auto;
+}
+
+.farmer {
+    font-size: 65px;
+    animation: farmerBounce 2s ease-in-out infinite;
+}
+
+@keyframes farmerBounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-12px);
+    }
 }
