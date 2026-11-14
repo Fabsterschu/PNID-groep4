@@ -22,6 +22,6 @@ T2: kubectl get hpa -w
 T3: kubectl get pods -o wide --watch
 laat zien containers aanmaken, pods updates, verdeeld over nodes
  
- Get-Content -Raw .\loadtest\traffic.js | docker run --rm -i -p 127.0.0.1:5665:5665 -e K6_WEB_DASHBOARD=true -e K6_WEB_DASHBOARD_HOST=0.0.0.0 -e TARGET_URL="http://145.52.126.137/" grafana/k6:latest run -
+Get-Content -Raw .\loadtest\traffic.js | docker run --rm -i -p 127.0.0.1:5665:5665 -e K6_WEB_DASHBOARD=true -e K6_WEB_DASHBOARD_HOST=0.0.0.0 -e TARGET_URL="http://145.52.126.137/" grafana/k6:latest run -
 http://localhost:5665
 

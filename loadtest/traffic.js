@@ -14,7 +14,7 @@ export const options = {
             maxVUs: 2000, // VUs = Virtual User
 
             stages: [
-                { duration: '120s', target: 2000 }
+                { duration: '60s', target: 2000 }
             ],
         },
     },
