@@ -97,6 +97,7 @@ app.get('/api/v1/data', async (req, res) => {
             const userId = await redisClient.get(`session:${sessionId}`);
             if (userId) {
                 isAuthenticated = true;
+                redisClient.expire(`session:${sessionId}`, sessionTtl);
             } else {
                 res.status(401).json({ error: "Session id is ongeldig."});
             }
