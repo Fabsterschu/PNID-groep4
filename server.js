@@ -7,7 +7,7 @@ const crypto = require('crypto');
 const calculateData = require("./calculateData");
 const portNr = 3000;
 const app = express();
-const ttl = 60; //time to live van de cache is 60 seconden (1 minuut)
+const ttl = 3600; //time to live van de cache is 3600 seconden (1 uur)
 const sessionTtl = 100000;
 const redisClient = createClient({
     url: 'redis://redis-service:6379'
