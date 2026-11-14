@@ -50,7 +50,7 @@ app.get('/api/v1/data', async (req, res) => {
     const apiKey = req.headers['api-key'];
 
     if (!apiKey && !sessionId) {
-        return res.status(401).json({ error: "Niet geautoriseerd." });
+        return res.status(401).json({ error: "Geen autorisatie meegegeven." });
     }
 
     if (apiKey) {
@@ -74,6 +74,8 @@ app.get('/api/v1/data', async (req, res) => {
             const userId = await redisClient.get(`session:${sessionId}`)
             if (userId) {
                 isAuthenticated = true
+            } else {
+                res.status(401).json({ error: "Session id is ongeldig."});
             }
         }
 
