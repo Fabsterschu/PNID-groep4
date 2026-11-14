@@ -40,7 +40,7 @@ app.use(async (req, res, next) => {
         const userId = await redisClient.get(`session:${sessionId}`);
         if (!userId) {
             console.log("[REDIRECT] Session expired, doorsturen naar login.");
-            return res.redirect(301, "/login");
+            return res.redirect(302, "/login");
         }
     }
     next();
