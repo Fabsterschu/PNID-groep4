@@ -30,12 +30,17 @@ const pool = new Pool({
     port: process.env.DB_PORT
 })
 
-app.use((req, res, next) => {
+app.use(async (req, res, next) => {
     if (req.path === "/" || req.path === "/index.html" || req.path === "/planting/" || req.path === "/planting/index.html" || req.path === "/fertilizing/" || req.path === "/fertilizing/index.html" || req.path === "/harvesting/" || req.path === "/harvesting/index.html" || req.path === "/heat/" || req.path === "/heat/index.html" || req.path === "/irrigation/" || req.path === "/irrigation/index.html" || req.path === "/spraying/" || req.path === "/spraying/index.html") {
         const sessionId = req.cookies.sessionID;
-        if(!sessionId) {
+        if (!sessionId) {
             console.log("[REDIRECT] Gebruiker is niet ingelogd, doorsturen naar login.");
             return res.redirect(302, "/login");
+        }
+        const userId = await redisClient.get(sessionId);
+        if (!userId) {
+            console.log("[REDIRECT] Session expired, doorsturen naar login.");
+            return res.redirect(301, "/login");
         }
     }
     next();
